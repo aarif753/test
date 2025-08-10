@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Image Editor</title>
+    <meta name="description" content="Professional image editor with real-time effects, face enhancement, and stylish filters">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --primary-light: #a29bfe;
+            --primary-dark: #4d44db;
+            --success: #00b894;
+            --success-light: rgba(0, 184, 148, 0.1);
+            --danger: #d63031;
+            --light: #f8f9fa;
+            --dark: #2d3436;
+            --gray: #636e72;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 12px;
+            --toolbar-height: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #dfe6f0 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 15px 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .editor-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .editor-header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
+            font-weight: 300;
+        }
+
+        .editor-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        @media (min-width: 992px) {
+            .editor-content {
+                flex-direction: row;
+            }
+        }
+
+        .editor-canvas-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+            overflow: hidden;
+        }
+
+        #canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: var(--shadow-md);
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--white);
+            border: none;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--primary);
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .zoom-btn:hover {
+            background: var(--primary-light);
+            color: var(--white);
+        }
+
+        .editor-tools {
+            width: 100%;
+            max-width: 350px;
+            background: var(--white);
+            border-left: 1px solid #eee;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tool-section {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .tool-section h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: var(--dark);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tool-section h3 i {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+
+        .slider-value {
+            min-width: 40px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--dark);
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-light);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--primary-light);
+            border-radius: var(--border-radius);
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 15px;
+            background: rgba(162, 155, 254, 0.05);
+        }
+
+        .upload-area.highlight {
+            border-color: var(--primary);
+            background: rgba(162, 155, 254, 0.1);
+        }
+
+        .upload-area i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .upload-area h3 {
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .upload-area p {
+            color: var(--gray);
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .upload-area .browse-text {
+            color: var(--primary);
+            font-weight: 500;
+            text-decoration: underline;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .filter-item {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            aspect-ratio: 1/1;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .filter-item:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .filter-item.active {
+            border-color: var(--primary);
+        }
+
+        .filter-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .filter-item .filter-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px;
+            font-size: 0.7rem;
+            text-align: center;
+        }
+
+        .color-picker-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .color-preview {
+            width: 100%;
+            height: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+        }
+
+        .color-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .color-inputs input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+        }
+
+        .error-message {
+            color: var(--danger);
+            background: rgba(214, 48, 49, 0.1);
+            padding: 10px 12px;
+            border-radius: var(--border-radius);
+            margin-bottom: 16px;
+            display: none;
+            font-size: 0.85rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(108, 92, 231, 0.2);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .face-controls {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-option label {
+            font-size: 0.85rem;
+            color: var(--dark);
+            cursor: pointer;
+        }
+
+        .toolbar {
+            display: flex;
+            padding: 10px 15px;
+            background: var(--white);
+            border-top: 1px solid #eee;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .toolbar-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            min-width: 70px;
+            transition: var(--transition);
+        }
+
+        .toolbar-btn i {
+            font-size: 1.2rem;
+            color: var(--gray);
+        }
+
+        .toolbar-btn span {
+            font-size: 0.7rem;
+            color: var(--gray);
+        }
+
+        .toolbar-btn.active {
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .toolbar-btn.active i,
+        .toolbar-btn.active span {
+            color: var(--primary);
+        }
+
+        .toolbar-btn:hover {
+            background: rgba(108, 92, 231, 0.05);
+        }
+
+        .tool-section {
+            display: none;
+        }
+
+        .tool-section.active {
+            display: block;
+        }
+
+        .canvas-controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+
+        .canvas-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--white);
+            border: none;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--dark);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .canvas-btn:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            .editor-header {
+                padding: 15px;
+            }
+            
+            .editor-header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .filter-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .editor-tools {
+                max-width: 100%;
+                border-left: none;
+                border-top: 1px solid #eee;
+            }
+            
+            .zoom-controls {
+                bottom: 80px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="editor-header">
+            <h1>Pro Image Editor</h1>
+            <p>Edit your photos with professional tools and real-time effects</p>
+        </div>
+
+        <div class="editor-content">
+            <div class="editor-canvas-container">
+                <div class="error-message" id="error-message"></div>
+                
+                <div id="canvas-container">
+                    <canvas id="canvas"></canvas>
+                    
+                    <div class="canvas-controls">
+                        <button class="canvas-btn" id="rotate-left-btn" title="Rotate Left">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button class="canvas-btn" id="rotate-right-btn" title="Rotate Right">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <button class="canvas-btn" id="flip-horizontal-btn" title="Flip Horizontal">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </button>
+                        <button class="canvas-btn" id="flip-vertical-btn" title="Flip Vertical">
+                            <i class="fas fa-arrows-alt-v"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" id="zoom-in-btn" title="Zoom In">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button class="zoom-btn" id="zoom-out-btn" title="Zoom Out">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button class="zoom-btn" id="zoom-reset-btn" title="Reset Zoom">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="toolbar">
+                    <button class="toolbar-btn active" data-tool="upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>Upload</span>
+                    </button>
+                    <button class="toolbar-btn" data-tool="adjust">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>Adjust</span>
+                    </button>
+                    <button class="toolbar-btn" data-tool="face">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Face</span>
+                    </button>
+                    <button class="toolbar-btn" data-tool="color">
+                        <i class="fas fa-fill-drip"></i>
+                        <span>Color</span>
+                    </button>
+                    <button class="toolbar-btn" data-tool="filters">
+                        <i class="fas fa-magic"></i>
+                        <span>Filters</span>
+                    </button>
+                    <button class="toolbar-btn" id="download-btn">
+                        <i class="fas fa-download"></i>
+                        <span>Save</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="editor-tools">
+                <div class="tool-section active" id="upload-section">
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Select Image</h3>
+                        <p>Drag & drop your image here or <span class="browse-text">browse</span></p>
+                        <input type="file" id="file-input" accept="image/*">
+                    </div>
+                </div>
+                
+                <div class="tool-section" id="adjust-section">
+                    <div class="slider-container">
+                        <label for="brightness">Brightness</label>
+                        <div class="slider-group">
+                            <input type="range" id="brightness" min="-1" max="1" step="0.1" value="0">
+                            <span class="slider-value" id="brightness-value">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="contrast">Contrast</label>
+                        <div class="slider-group">
+                            <input type="range" id="contrast" min="-1" max="1" step="0.1" value="0">
+                            <span class="slider-value" id="contrast-value">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="saturation">Saturation</label>
+                        <div class="slider-group">
+                            <input type="range" id="saturation" min="-1" max="1" step="0.1" value="0">
+                            <span class="slider-value" id="saturation-value">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="exposure">Exposure</label>
+                        <div class="slider-group">
+                            <input type="range" id="exposure" min="-1" max="1" step="0.1" value="0">
+                            <span class="slider-value" id="exposure-value">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="vignette">Vignette</label>
+                        <div class="slider-group">
+                            <input type="range" id="vignette" min="0" max="1" step="0.1" value="0">
+                            <span class="slider-value" id="vignette-value">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tool-section" id="face-section">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="detect-faces">
+                        <label for="detect-faces">Detect Faces</label>
+                    </div>
+                    
+                    <div class="face-controls" id="face-controls">
+                        <div class="slider-container">
+                            <label for="face-brightness">Face Brightness</label>
+                            <div class="slider-group">
+                                <input type="range" id="face-brightness" min="-0.5" max="0.5" step="0.1" value="0">
+                                <span class="slider-value" id="face-brightness-value">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="face-smooth">Face Smoothing</label>
+                            <div class="slider-group">
+                                <input type="range" id="face-smooth" min="0" max="1" step="0.1" value="0">
+                                <span class="slider-value" id="face-smooth-value">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="face-sharpness">Face Sharpness</label>
+                            <div class="slider-group">
+                                <input type="range" id="face-sharpness" min="-0.5" max="0.5" step="0.1" value="0">
+                                <span class="slider-value" id="face-sharpness-value">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="face-redness">Redness Reduction</label>
+                            <div class="slider-group">
+                                <input type="range" id="face-redness" min="0" max="1" step="0.1" value="0">
+                                <span class="slider-value" id="face-redness-value">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tool-section" id="color-section">
+                    <div class="color-picker-container">
+                        <label>Select Color to Replace</label>
+                        <div class="color-preview" id="original-color-preview" style="background: #ffffff;"></div>
+                        <div class="color-inputs">
+                            <input type="color" id="original-color" value="#ffffff">
+                            <input type="text" id="original-color-hex" placeholder="#FFFFFF" value="#FFFFFF">
+                        </div>
+                        
+                        <label>Replacement Color</label>
+                        <div class="color-preview" id="replacement-color-preview" style="background: #6c5ce7;"></div>
+                        <div class="color-inputs">
+                            <input type="color" id="replacement-color" value="#6c5ce7">
+                            <input type="text" id="replacement-color-hex" placeholder="#6C5CE7" value="#6C5CE7">
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label for="color-tolerance">Color Tolerance</label>
+                            <div class="slider-group">
+                                <input type="range" id="color-tolerance" min="0" max="100" step="1" value="10">
+                                <span class="slider-value" id="color-tolerance-value">10</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" id="replace-color-btn">
+                            <i class="fas fa-fill-drip"></i> Replace Color
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tool-section" id="filters-section">
+                    <div class="filter-grid" id="filter-grid">
+                        <div class="filter-item active" data-filter="none">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmNWY1ZjUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNjM2ZTcyIj5ObyBGaWx0ZXI8L3RleHQ+PC9zdmc+" alt="No Filter">
+                            <div class="filter-name">Original</div>
+                        </div>
+                        <div class="filter-item" data-filter="clarendon">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlMGYzZjYiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNjM2ZTcyIj5DbGFyZW5kb248L3RleHQ+PC9zdmc+" alt="Clarendon">
+                            <div class="filter-name">Clarendon</div>
+                        </div>
+                        <div class="filter-item" data-filter="gingham">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmZWVlZGIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNjM2ZTcyIj5HaW5naGFtPC90ZXh0Pjwvc3ZnPg==" alt="Gingham">
+                            <div class="filter-name">Gingham</div>
+                        </div>
+                        <div class="filter-item" data-filter="moon">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNkNmI1NjkiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNjM2ZTcyIj5Nb29uPC90ZXh0Pjwvc3ZnPg==" alt="Moon">
+                            <div class="filter-name">Moon</div>
+                        </div>
+                        <div class="filter-item" data-filter="lark">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlYmNjOTkiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNjM2ZTcyIj5MYXJrPC90ZXh0Pjwvc3ZnPg==" alt="Lark">
+                            <div class="filter-name">Lark</div>
+                        </div>
+                        <div class="filter-item" data-filter="reyes">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNkZGRkZGQiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNjM2ZTcyIj5SZXllczwvdGV4dD48L3N2Zz4=" alt="Reyes">
+                            <div class="filter-name">Reyes</div>
+                        </div>
+                        <div class="filter-item" data-filter="juno">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlYmNjOTkiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNjM2ZTcyIj5KdW5vPC90ZXh0Pjwvc3ZnPg==" alt="Juno">
+                            <div class="filter-name">Juno</div>
+                        </div>
+                        <div class="filter-item" data-filter="slumber">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmZWVlZGIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNjM2ZTcyIj5TbHVtYmVyPC90ZXh0Pjwvc3ZnPg==" alt="Slumber">
+                            <div class="filter-name">Slumber</div>
+                        </div>
+                        <div class="filter-item" data-filter="crema">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNkNmI1NjkiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmaWxsPSIjNjM2ZTcyIj5DcmVtYTwvdGV4dD48L3N2Zz4=" alt="Crema">
+                            <div class="filter-name">Crema</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const canvas = document.getElementById('canvas');
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-input');
+            const downloadBtn = document.getElementById('download-btn');
+            const errorMessage = document.getElementById('error-message');
+            const detectFacesCheckbox = document.getElementById('detect-faces');
+            const faceControls = document.getElementById('face-controls');
+            
+            // Toolbar buttons
+            const toolbarBtns = document.querySelectorAll('.toolbar-btn');
+            const toolSections = document.querySelectorAll('.tool-section');
+            
+            // Slider elements
+            const brightnessSlider = document.getElementById('brightness');
+            const brightnessValue = document.getElementById('brightness-value');
+            const contrastSlider = document.getElementById('contrast');
+            const contrastValue = document.getElementById('contrast-value');
+            const saturationSlider = document.getElementById('saturation');
+            const saturationValue = document.getElementById('saturation-value');
+            const exposureSlider = document.getElementById('exposure');
+            const exposureValue = document.getElementById('exposure-value');
+            const vignetteSlider = document.getElementById('vignette');
+            const vignetteValue = document.getElementById('vignette-value');
+            const faceBrightnessSlider = document.getElementById('face-brightness');
+            const faceBrightnessValue = document.getElementById('face-brightness-value');
+            const faceSmoothSlider = document.getElementById('face-smooth');
+            const faceSmoothValue = document.getElementById('face-smooth-value');
+            const faceSharpnessSlider = document.getElementById('face-sharpness');
+            const faceSharpnessValue = document.getElementById('face-sharpness-value');
+            const faceRednessSlider = document.getElementById('face-redness');
+            const faceRednessValue = document.getElementById('face-redness-value');
+            
+            // Color replacement elements
+            const originalColorPreview = document.getElementById('original-color-preview');
+            const originalColorInput = document.getElementById('original-color');
+            const originalColorHex = document.getElementById('original-color-hex');
+            const replacementColorPreview = document.getElementById('replacement-color-preview');
+            const replacementColorInput = document.getElementById('replacement-color');
+            const replacementColorHex = document.getElementById('replacement-color-hex');
+            const colorToleranceSlider = document.getElementById('color-tolerance');
+            const colorToleranceValue = document.getElementById('color-tolerance-value');
+            const replaceColorBtn = document.getElementById('replace-color-btn');
+            
+            // Filter elements
+            const filterGrid = document.getElementById('filter-grid');
+            const filterItems = document.querySelectorAll('.filter-item');
+            
+            // Canvas controls
+            const rotateLeftBtn = document.getElementById('rotate-left-btn');
+            const rotateRightBtn = document.getElementById('rotate-right-btn');
+            const flipHorizontalBtn = document.getElementById('flip-horizontal-btn');
+            const flipVerticalBtn = document.getElementById('flip-vertical-btn');
+            const zoomInBtn = document.getElementById('zoom-in-btn');
+            const zoomOutBtn = document.getElementById('zoom-out-btn');
+            const zoomResetBtn = document.getElementById('zoom-reset-btn');
+            
+            // Fabric.js canvas with zoom/pan support
+            let fabricCanvas = new fabric.Canvas('canvas', {
+                backgroundColor: '#f5f5f5',
+                preserveObjectStacking: true,
+                fireRightClick: true,
+                stopContextMenu: true
+            });
+            
+            // State
+            let originalImage = null;
+            let currentImage = null;
+            let faceDetections = [];
+            let faceRectangles = [];
+            let currentZoom = 1;
+            let isDragging = false;
+            let lastPosX = 0;
+            let lastPosY = 0;
+            let activeFilter = 'none';
+            
+            // Initialize face-api.js models
+            async function loadFaceModels() {
+                try {
+                    await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+                    await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+                } catch (error) {
+                    console.error('Error loading face models:', error);
+                    showError('Failed to load face detection models. Face features disabled.');
+                }
+            }
+            
+            // Load face models when page loads
+            loadFaceModels();
+            
+            // Setup toolbar navigation
+            toolbarBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tool = this.dataset.tool;
+                    
+                    // Update active button
+                    toolbarBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding section
+                    toolSections.forEach(section => section.classList.remove('active'));
+                    document.getElementById(`${tool}-section`).classList.add('active');
+                });
+            });
+            
+            // Update slider value displays and apply changes in real-time
+            brightnessSlider.addEventListener('input', function() {
+                brightnessValue.textContent = this.value;
+                applyImageAdjustments();
+            });
+            
+            contrastSlider.addEventListener('input', function() {
+                contrastValue.textContent = this.value;
+                applyImageAdjustments();
+            });
+            
+            saturationSlider.addEventListener('input', function() {
+                saturationValue.textContent = this.value;
+                applyImageAdjustments();
+            });
+            
+            exposureSlider.addEventListener('input', function() {
+                exposureValue.textContent = this.value;
+                applyImageAdjustments();
+            });
+            
+            vignetteSlider.addEventListener('input', function() {
+                vignetteValue.textContent = this.value;
+                applyImageAdjustments();
+            });
+            
+            faceBrightnessSlider.addEventListener('input', function() {
+                faceBrightnessValue.textContent = this.value;
+                if (detectFacesCheckbox.checked) {
+                    applyImageAdjustments();
+                }
+            });
+            
+            faceSmoothSlider.addEventListener('input', function() {
+                faceSmoothValue.textContent = this.value;
+                if (detectFacesCheckbox.checked) {
+                    applyImageAdjustments();
+                }
+            });
+            
+            faceSharpnessSlider.addEventListener('input', function() {
+                faceSharpnessValue.textContent = this.value;
+                if (detectFacesCheckbox.checked) {
+                    applyImageAdjustments();
+                }
+            });
+            
+            faceRednessSlider.addEventListener('input', function() {
+                faceRednessValue.textContent = this.value;
+                if (detectFacesCheckbox.checked) {
+                    applyImageAdjustments();
+                }
+            });
+            
+            colorToleranceSlider.addEventListener('input', function() {
+                colorToleranceValue.textContent = this.value;
+            });
+            
+            // Color picker synchronization
+            originalColorInput.addEventListener('input', function() {
+                originalColorPreview.style.backgroundColor = this.value;
+                originalColorHex.value = this.value.toUpperCase();
+            });
+            
+            originalColorHex.addEventListener('input', function() {
+                if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+                    originalColorInput.value = this.value;
+                    originalColorPreview.style.backgroundColor = this.value;
+                }
+            });
+            
+            replacementColorInput.addEventListener('input', function() {
+                replacementColorPreview.style.backgroundColor = this.value;
+                replacementColorHex.value = this.value.toUpperCase();
+            });
+            
+            replacementColorHex.addEventListener('input', function() {
+                if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+                    replacementColorInput.value = this.value;
+                    replacementColorPreview.style.backgroundColor = this.value;
+                }
+            });
+            
+            // Detect faces checkbox
+            detectFacesCheckbox.addEventListener('change', function() {
+                if (this.checked && currentImage) {
+                    detectFaces();
+                    faceControls.style.display = 'block';
+                } else {
+                    clearFaceRectangles();
+                    faceControls.style.display = 'none';
+                    applyImageAdjustments();
+                }
+            });
+            
+            // Handle drag and drop events
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.add('highlight');
+            });
+            
+            uploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.remove('highlight');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.remove('highlight');
+                
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelection(e.dataTransfer.files[0]);
+                }
+            });
+            
+            // Handle click to select file
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    handleFileSelection(fileInput.files[0]);
+                }
+            });
+            
+            // Replace color button
+            replaceColorBtn.addEventListener('click', replaceColor);
+            
+            // Filter selection
+            filterItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    filterItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    activeFilter = this.dataset.filter;
+                    applyImageAdjustments();
+                });
+            });
+            
+            // Canvas controls
+            rotateLeftBtn.addEventListener('click', () => {
+                if (currentImage) {
+                    currentImage.rotate(currentImage.angle - 90);
+                    fabricCanvas.renderAll();
+                }
+            });
+            
+            rotateRightBtn.addEventListener('click', () => {
+                if (currentImage) {
+                    currentImage.rotate(currentImage.angle + 90);
+                    fabricCanvas.renderAll();
+                }
+            });
+            
+            flipHorizontalBtn.addEventListener('click', () => {
+                if (currentImage) {
+                    currentImage.set('flipX', !currentImage.flipX);
+                    fabricCanvas.renderAll();
+                }
+            });
+            
+            flipVerticalBtn.addEventListener('click', () => {
+                if (currentImage) {
+                    currentImage.set('flipY', !currentImage.flipY);
+                    fabricCanvas.renderAll();
+                }
+            });
+            
+            zoomInBtn.addEventListener('click', () => {
+                zoomCanvas(1.2);
+            });
+            
+            zoomOutBtn.addEventListener('click', () => {
+                zoomCanvas(0.8);
+            });
+            
+            zoomResetBtn.addEventListener('click', () => {
+                resetZoom();
+            });
+            
+            // Setup canvas zoom/pan
+            fabricCanvas.on('mouse:down', function(options) {
+                if (options.e.button === 1 || (options.e.button === 0 && options.e.ctrlKey)) {
+                    isDragging = true;
+                    lastPosX = options.e.clientX;
+                    lastPosY = options.e.clientY;
+                    fabricCanvas.selection = false;
+                    fabricCanvas.defaultCursor = 'grabbing';
+                }
+            });
+            
+            fabricCanvas.on('mouse:move', function(options) {
+                if (isDragging) {
+                    const deltaX = options.e.clientX - lastPosX;
+                    const deltaY = options.e.clientY - lastPosY;
+                    
+                    fabricCanvas.relativePan({
+                        x: deltaX / currentZoom,
+                        y: deltaY / currentZoom
+                    });
+                    
+                    lastPosX = options.e.clientX;
+                    lastPosY = options.e.clientY;
+                }
+            });
+            
+            fabricCanvas.on('mouse:up', function() {
+                isDragging = false;
+                fabricCanvas.selection = true;
+                fabricCanvas.defaultCursor = 'default';
+            });
+            
+            fabricCanvas.on('mouse:wheel', function(options) {
+                const delta = options.e.deltaY;
+                const zoomFactor = delta > 0 ? 0.8 : 1.2;
+                zoomCanvas(zoomFactor, {
+                    x: options.e.offsetX,
+                    y: options.e.offsetY
+                });
+                options.e.preventDefault();
+                options.e.stopPropagation();
+            });
+            
+            // Download button
+            downloadBtn.addEventListener('click', downloadImage);
+            
+            // Zoom functions
+            function zoomCanvas(zoomFactor, point) {
+                if (!currentImage) return;
+                
+                currentZoom *= zoomFactor;
+                currentZoom = Math.max(0.1, Math.min(currentZoom, 10));
+                
+                fabricCanvas.zoomToPoint(
+                    point ? { x: point.x, y: point.y } : { x: fabricCanvas.width / 2, y: fabricCanvas.height / 2 },
+                    currentZoom
+                );
+            }
+            
+            function resetZoom() {
+                if (!currentImage) return;
+                
+                currentZoom = 1;
+                fabricCanvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+                centerImage();
+            }
+            
+            function centerImage() {
+                if (!currentImage) return;
+                
+                fabricCanvas.viewportTransform[4] = (fabricCanvas.width - currentImage.width * currentImage.scaleX) / 2;
+                fabricCanvas.viewportTransform[5] = (fabricCanvas.height - currentImage.height * currentImage.scaleY) / 2;
+                fabricCanvas.renderAll();
+            }
+            
+            // Handle file selection
+            function handleFileSelection(file) {
+                if (!file.type.match('image.*')) {
+                    showError('Please select a valid image file (JPG, PNG, GIF, WebP).');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fabric.Image.fromURL(e.target.result, function(img) {
+                        // Clear previous image and face detections
+                        fabricCanvas.clear();
+                        clearFaceRectangles();
+                        
+                        // Set canvas dimensions to match image
+                        fabricCanvas.setWidth(img.width);
+                        fabricCanvas.setHeight(img.height);
+                        
+                        // Center the image
+                        img.set({
+                            left: fabricCanvas.width / 2,
+                            top: fabricCanvas.height / 2,
+                            originX: 'center',
+                            originY: 'center'
+                        });
+                        
+                        // Add image to canvas
+                        fabricCanvas.add(img);
+                        fabricCanvas.renderAll();
+                        
+                        // Store references
+                        originalImage = img;
+                        currentImage = img;
+                        
+                        // Reset zoom and position
+                        resetZoom();
+                        
+                        // Hide error message
+                        hideError();
+                        
+                        // Reset sliders
+                        brightnessSlider.value = 0;
+                        brightnessValue.textContent = '0';
+                        contrastSlider.value = 0;
+                        contrastValue.textContent = '0';
+                        saturationSlider.value = 0;
+                        saturationValue.textContent = '0';
+                        exposureSlider.value = 0;
+                        exposureValue.textContent = '0';
+                        vignetteSlider.value = 0;
+                        vignetteValue.textContent = '0';
+                        faceBrightnessSlider.value = 0;
+                        faceBrightnessValue.textContent = '0';
+                        faceSmoothSlider.value = 0;
+                        faceSmoothValue.textContent = '0';
+                        faceSharpnessSlider.value = 0;
+                        faceSharpnessValue.textContent = '0';
+                        faceRednessSlider.value = 0;
+                        faceRednessValue.textContent = '0';
+                        
+                        // Reset filter
+                        filterItems.forEach(item => item.classList.remove('active'));
+                        document.querySelector('.filter-item[data-filter="none"]').classList.add('active');
+                        activeFilter = 'none';
+                        
+                        // Check if face detection is enabled
+                        if (detectFacesCheckbox.checked) {
+                            detectFaces();
+                            faceControls.style.display = 'block';
+                        }
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Detect faces in the image
+            async function detectFaces() {
+                if (!currentImage) return;
+                
+                try {
+                    // Convert Fabric canvas to image for face detection
+                    const imageData = fabricCanvas.toDataURL({
+                        format: 'jpeg',
+                        quality: 0.8
+                    });
+                    
+                    const img = await faceapi.fetchImage(imageData);
+                    faceDetections = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions())
+                        .withFaceLandmarks();
+                    
+                    // Clear previous face rectangles
+                    clearFaceRectangles();
+                    
+                    // Draw rectangles around detected faces
+                    faceDetections.forEach(detection => {
+                        const box = detection.detection.box;
+                        const rect = new fabric.Rect({
+                            left: box.x,
+                            top: box.y,
+                            width: box.width,
+                            height: box.height,
+                            stroke: '#00b894',
+                            strokeWidth: 2,
+                            fill: 'transparent',
+                            selectable: false,
+                            evented: false
+                        });
+                        
+                        faceRectangles.push(rect);
+                        fabricCanvas.add(rect);
+                    });
+                    
+                    fabricCanvas.renderAll();
+                    applyImageAdjustments();
+                } catch (error) {
+                    console.error('Error detecting faces:', error);
+                    showError('Error detecting faces. Please try again.');
+                }
+            }
+            
+            // Clear face rectangles from canvas
+            function clearFaceRectangles() {
+                faceRectangles.forEach(rect => {
+                    fabricCanvas.remove(rect);
+                });
+                faceRectangles = [];
+                faceDetections = [];
+                fabricCanvas.renderAll();
+            }
+            
+            // Apply image adjustments in real-time
+            function applyImageAdjustments() {
+                if (!currentImage) return;
+                
+                try {
+                    // Create a copy of the original image
+                    const adjustedImage = new fabric.Image(currentImage._originalElement, {
+                        left: currentImage.left,
+                        top: currentImage.top,
+                        originX: currentImage.originX,
+                        originY: currentImage.originY,
+                        scaleX: currentImage.scaleX,
+                        scaleY: currentImage.scaleY,
+                        angle: currentImage.angle,
+                        opacity: currentImage.opacity,
+                        flipX: currentImage.flipX,
+                        flipY: currentImage.flipY,
+                        filters: []
+                    });
+                    
+                    // Apply brightness, contrast, saturation, exposure
+                    adjustedImage.filters.push(
+                        new fabric.Image.filters.Brightness({
+                            brightness: parseFloat(brightnessSlider.value)
+                        }),
+                        new fabric.Image.filters.Contrast({
+                            contrast: parseFloat(contrastSlider.value)
+                        }),
+                        new fabric.Image.filters.Saturation({
+                            saturation: parseFloat(saturationSlider.value)
+                        }),
+                        new fabric.Image.filters.Exposure({
+                            exposure: parseFloat(exposureSlider.value)
+                        })
+                    );
+                    
+                    // Apply vignette effect
+                    const vignette = parseFloat(vignetteSlider.value);
+                    if (vignette > 0) {
+                        adjustedImage.filters.push(
+                            new fabric.Image.filters.Vignette({
+                                intensity: vignette,
+                                blur: 0.5 * vignette
+                            })
+                        );
+                    }
+                    
+                    // Apply selected filter
+                    switch (activeFilter) {
+                        case 'clarendon':
+                            adjustedImage.filters.push(
+                                new fabric.Image.filters.Contrast({ contrast: 0.2 }),
+                                new fabric.Image.filters.Brightness({ brightness: 0.05 }),
+                                new fabric.Image.filters.Saturation({ saturation: 0.15 }),
+                                new fabric.Image.filters.BlendColor({
+                                    color: '#e0f3f6',
+                                    mode: 'tint',
+                                    alpha: 0.1
+                                })
+                            );
+                            break;
+                        case 'gingham':
+                            adjustedImage.filters.push(
+                                new fabric.Image.filters.Brightness({ brightness: 0.1 }),
+                                new fabric.Image.filters.BlendColor({
+                                    color: '#ffeedb',
+                                    mode: 'tint',
+                                    alpha: 0.15
+                                })
+                            );
+                            break;
+                        case 'moon':
+                            adjustedImage.filters.push(
+                                new fabric.Image.filters.Grayscale(),
+                                new fabric.Image.filters.Brightness({ brightness: 0.1 }),
+                                new fabric.Image.filters.Contrast({ contrast: 0.1 })
+                            );
+                            break;
+                        case 'lark':
+                            adjustedImage.filters.push(
+                                new fabric.Image.filters.Brightness({ brightness: 0.05 }),
+                                new fabric.Image.filters.Saturation({ saturation: 0.15 }),
+                                new fabric.Image.filters.BlendColor({
+                                    color: '#ebcc99',
+                                    mode: 'tint',
+                                    alpha: 0.1
+                                })
+                            );
+                            break;
+                        case 'reyes':
+                            adjustedImage.filters.push(
+                                new fabric.Image.filters.Brightness({ brightness: 0.15 }),
+                                new fabric.Image.filters.Contrast({ contrast: -0.1 }),
+                                new fabric.Image.filters.Sepia({ sepia: 0.2 })
+                            );
+                            break;
+                        case 'juno':
+                            adjustedImage.filters.push(
+                                new fabric.Image.filters.Saturation({ saturation: 0.25 }),
+                                new fabric.Image.filters.BlendColor({
+                                    color: '#ebcc99',
+                                    mode: 'tint',
+                                    alpha: 0.15
+                                })
+                            );
+                            break;
+                        case 'slumber':
+                            adjustedImage.filters.push(
+                                new fabric.Image.filters.Brightness({ brightness: 0.05 }),
+                                new fabric.Image.filters.Saturation({ saturation: -0.1 }),
+                                new fabric.Image.filters.BlendColor({
+                                    color: '#ffeedb',
+                                    mode: 'tint',
+                                    alpha: 0.2
+                                })
+                            );
+                            break;
+                        case 'crema':
+                            adjustedImage.filters.push(
+                                new fabric.Image.filters.Brightness({ brightness: 0.1 }),
+                                new fabric.Image.filters.Sepia({ sepia: 0.3 }),
+                                new fabric.Image.filters.Contrast({ contrast: -0.05 })
+                            );
+                            break;
+                        case 'none':
+                        default:
+                            // No additional filters
+                            break;
+                    }
+                    
+                    // Apply face enhancements if enabled and faces detected
+                    if (detectFacesCheckbox.checked && faceDetections.length > 0) {
+                        applyFaceEnhancements(adjustedImage);
+                    }
+                    
+                    // Apply all filters
+                    adjustedImage.applyFilters();
+                    
+                    // Replace current image with adjusted one
+                    fabricCanvas.remove(currentImage);
+                    fabricCanvas.add(adjustedImage);
+                    currentImage = adjustedImage;
+                    
+                    // Re-add face rectangles if needed
+                    if (detectFacesCheckbox.checked && faceDetections.length > 0) {
+                        faceRectangles.forEach(rect => {
+                            fabricCanvas.add(rect);
+                        });
+                    }
+                    
+                    fabricCanvas.renderAll();
+                } catch (error) {
+                    console.error('Error applying adjustments:', error);
+                    showError('Error applying adjustments. Please try again.');
+                }
+            }
+            
+            // Apply face enhancements
+            function applyFaceEnhancements(image) {
+                const faceBrightness = parseFloat(faceBrightnessSlider.value);
+                const faceSmooth = parseFloat(faceSmoothSlider.value);
+                const faceSharpness = parseFloat(faceSharpnessSlider.value);
+                const faceRedness = parseFloat(faceRednessSlider.value);
+                
+                if (faceBrightness === 0 && faceSmooth === 0 && faceSharpness === 0 && faceRedness === 0) {
+                    return;
+                }
+                
+                // Get image dimensions
+                const width = image.width * image.scaleX;
+                const height = image.height * image.scaleY;
+                
+                // Create a temporary canvas for face processing
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Draw the image to the temp canvas
+                image.applyFilters();
+                tempCtx.drawImage(image._element, 0, 0, width, height);
+                
+                // Process each face
+                faceDetections.forEach(detection => {
+                    const box = detection.detection.box;
+                    
+                    // Get face region
+                    const faceX = Math.max(0, box.x);
+                    const faceY = Math.max(0, box.y);
+                    const faceWidth = Math.min(box.width, width - faceX);
+                    const faceHeight = Math.min(box.height, height - faceY);
+                    
+                    // Get face image data
+                    const faceData = tempCtx.getImageData(faceX, faceY, faceWidth, faceHeight);
+                    
+                    // Apply face enhancements
+                    if (faceBrightness !== 0) {
+                        applyBrightnessToPixels(faceData.data, faceBrightness);
+                    }
+                    
+                    if (faceSmooth > 0) {
+                        smoothFace(faceData, faceSmooth);
+                    }
+                    
+                    if (faceSharpness !== 0) {
+                        sharpenFace(faceData, faceSharpness);
+                    }
+                    
+                    if (faceRedness > 0) {
+                        reduceRedness(faceData, faceRedness);
+                    }
+                    
+                    // Put modified data back
+                    tempCtx.putImageData(faceData, faceX, faceY);
+                });
+                
+                // Update the fabric image with the modified canvas
+                fabric.Image.fromURL(tempCanvas.toDataURL(), function(newImg) {
+                    newImg.set({
+                        left: image.left,
+                        top: image.top,
+                        originX: image.originX,
+                        originY: image.originY,
+                        scaleX: image.scaleX,
+                        scaleY: image.scaleY,
+                        angle: image.angle,
+                        opacity: image.opacity,
+                        flipX: image.flipX,
+                        flipY: image.flipY
+                    });
+                    
+                    fabricCanvas.remove(image);
+                    fabricCanvas.add(newImg);
+                    currentImage = newImg;
+                    fabricCanvas.renderAll();
+                });
+            }
+            
+            // Apply brightness to pixel data
+            function applyBrightnessToPixels(pixels, brightness) {
+                for (let i = 0; i < pixels.length; i += 4) {
+                    pixels[i] = pixels[i] + (brightness * 255);
+                    pixels[i+1] = pixels[i+1] + (brightness * 255);
+                    pixels[i+2] = pixels[i+2] + (brightness * 255);
+                }
+            }
+            
+            // Simple face smoothing (box blur)
+            function smoothFace(imageData, amount) {
+                const radius = Math.floor(amount * 3);
+                if (radius < 1) return;
+                
+                const pixels = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+                
+                // Create a copy of the original pixels
+                const originalPixels = new Uint8ClampedArray(pixels);
+                
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        let r = 0, g = 0, b = 0, count = 0;
+                        
+                        // Sample neighboring pixels
+                        for (let dy = -radius; dy <= radius; dy++) {
+                            for (let dx = -radius; dx <= radius; dx++) {
+                                const nx = x + dx;
+                                const ny = y + dy;
+                                
+                                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                    const i = (ny * width + nx) * 4;
+                                    r += originalPixels[i];
+                                    g += originalPixels[i+1];
+                                    b += originalPixels[i+2];
+                                    count++;
+                                }
+                            }
+                        }
+                        
+                        // Set averaged pixel value
+                        const i = (y * width + x) * 4;
+                        pixels[i] = r / count;
+                        pixels[i+1] = g / count;
+                        pixels[i+2] = b / count;
+                    }
+                }
+            }
+            
+            // Simple face sharpening
+            function sharpenFace(imageData, amount) {
+                const pixels = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+                
+                // Create a copy of the original pixels
+                const originalPixels = new Uint8ClampedArray(pixels);
+                
+                // Apply sharpening kernel
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        const i = (y * width + x) * 4;
+                        
+                        // Apply simple sharpen kernel
+                        for (let c = 0; c < 3; c++) {
+                            const val = (
+                                5 * originalPixels[i + c] -
+                                originalPixels[i - 4 + c] -
+                                originalPixels[i + 4 + c] -
+                                originalPixels[i - width * 4 + c] -
+                                originalPixels[i + width * 4 + c]
+                            ) * amount;
+                            
+                            pixels[i + c] = Math.min(255, Math.max(0, originalPixels[i + c] + val));
+                        }
+                    }
+                }
+            }
+            
+            // Reduce redness in face
+            function reduceRedness(imageData, amount) {
+                const pixels = imageData.data;
+                
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const r = pixels[i];
+                    const g = pixels[i+1];
+                    const b = pixels[i+2];
+                    
+                    // Calculate redness (difference between red and other channels)
+                    const redness = r - (g + b) / 2;
+                    
+                    if (redness > 0) {
+                        const reduction = redness * amount;
+                        pixels[i] = Math.max(0, r - reduction);
+                        pixels[i+1] = Math.min(255, g + reduction * 0.5);
+                        pixels[i+2] = Math.min(255, b + reduction * 0.5);
+                    }
+                }
+            }
+            
+            // Replace color in image
+            function replaceColor() {
+                if (!currentImage) return;
+                
+                try {
+                    // Get colors and tolerance
+                    const originalColor = hexToRgb(originalColorInput.value);
+                    const replacementColor = hexToRgb(replacementColorInput.value);
+                    const tolerance = parseInt(colorToleranceSlider.value) / 100;
+                    
+                    if (!originalColor || !replacementColor) {
+                        showError('Invalid color values');
+                        return;
+                    }
+                    
+                    // Create a copy of the current image
+                    const modifiedImage = new fabric.Image(currentImage._originalElement, {
+                        left: currentImage.left,
+                        top: currentImage.top,
+                        originX: currentImage.originX,
+                        originY: currentImage.originY,
+                        scaleX: currentImage.scaleX,
+                        scaleY: currentImage.scaleY,
+                        angle: currentImage.angle,
+                        opacity: currentImage.opacity,
+                        flipX: currentImage.flipX,
+                        flipY: currentImage.flipY,
+                        filters: []
+                    });
+                    
+                    // Get image dimensions
+                    const width = modifiedImage.width * modifiedImage.scaleX;
+                    const height = modifiedImage.height * modifiedImage.scaleY;
+                    
+                    // Create a temporary canvas
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = width;
+                    tempCanvas.height = height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    
+                    // Draw the image to the temp canvas
+                    modifiedImage.applyFilters();
+                    tempCtx.drawImage(modifiedImage._element, 0, 0, width, height);
+                    
+                    // Get image data
+                    const imageData = tempCtx.getImageData(0, 0, width, height);
+                    const pixels = imageData.data;
+                    
+                    // Replace colors
+                    for (let i = 0; i < pixels.length; i += 4) {
+                        const r = pixels[i] / 255;
+                        const g = pixels[i+1] / 255;
+                        const b = pixels[i+2] / 255;
+                        
+                        // Calculate color distance
+                        const distance = colorDistance(
+                            {r, g, b},
+                            originalColor
+                        );
+                        
+                        // If color is within tolerance, replace it
+                        if (distance <= tolerance) {
+                            // Blend with replacement color based on distance
+                            const blendFactor = 1 - (distance / tolerance);
+                            pixels[i] = (r + (replacementColor.r - r) * blendFactor) * 255;
+                            pixels[i+1] = (g + (replacementColor.g - g) * blendFactor) * 255;
+                            pixels[i+2] = (b + (replacementColor.b - b) * blendFactor) * 255;
+                        }
+                    }
+                    
+                    // Put modified data back
+                    tempCtx.putImageData(imageData, 0, 0);
+                    
+                    // Update the fabric image with the modified canvas
+                    fabric.Image.fromURL(tempCanvas.toDataURL(), function(newImg) {
+                        newImg.set({
+                            left: modifiedImage.left,
+                            top: modifiedImage.top,
+                            originX: modifiedImage.originX,
+                            originY: modifiedImage.originY,
+                            scaleX: modifiedImage.scaleX,
+                            scaleY: modifiedImage.scaleY,
+                            angle: modifiedImage.angle,
+                            opacity: modifiedImage.opacity,
+                            flipX: modifiedImage.flipX,
+                            flipY: modifiedImage.flipY
+                        });
+                        
+                        fabricCanvas.remove(currentImage);
+                        fabricCanvas.add(newImg);
+                        currentImage = newImg;
+                        
+                        // Re-add face rectangles if needed
+                        if (detectFacesCheckbox.checked && faceDetections.length > 0) {
+                            faceRectangles.forEach(rect => {
+                                fabricCanvas.add(rect);
+                            });
+                        }
+                        
+                        fabricCanvas.renderAll();
+                    });
+                } catch (error) {
+                    console.error('Error replacing color:', error);
+                    showError('Error replacing color. Please try again.');
+                }
+            }
+            
+            // Download image
+            function downloadImage() {
+                if (!currentImage) return;
+                
+                try {
+                    const link = document.createElement('a');
+                    link.download = 'edited-image.png';
+                    link.href = fabricCanvas.toDataURL({
+                        format: 'png',
+                        quality: 1
+                    });
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (error) {
+                    console.error('Error downloading image:', error);
+                    showError('Error downloading image. Please try again.');
+                }
+            }
+            
+            // Helper function to convert hex to RGB
+            function hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16) / 255,
+                    g: parseInt(result[2], 16) / 255,
+                    b: parseInt(result[3], 16) / 255
+                } : null;
+            }
+            
+            // Helper function to calculate color distance
+            function colorDistance(color1, color2) {
+                const dr = color1.r - color2.r;
+                const dg = color1.g - color2.g;
+                const db = color1.b - color2.b;
+                return Math.sqrt(dr * dr + dg * dg + db * db);
+            }
+            
+            // Show error message
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+            
+            // Hide error message
+            function hideError() {
+                errorMessage.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
