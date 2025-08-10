@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en" class=""><head>
+
+  <meta charset="UTF-8">
+  <title>CodePen Demo</title>
+
+  <meta name="robots" content="noindex">
+
+  <link rel="shortcut icon" type="image/x-icon" href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico">
+  <link rel="mask-icon" href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-b4b4269c16397ad2f0f7a01bcdf513a1994f4c94b8af2f191c09eb0d601762b1.svg" color="#111">
+  <link rel="canonical" href="https://codepen.io/pen/">
+
+  
+  
+
+  <style id="INLINE_PEN_STYLESHEET_ID">
+    
+  </style>
+
+  
+<script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-2c7831bb44f98c1391d6a4ffda0e1fd302503391ca806e7fcc7b9b87197aec26.js"></script>
+<script src="https://cpwebassets.codepen.io/assets/editor/iframe/iframeConsoleRunner-6d8bf8b4b479137260842506acbb12717dace0823c023e08b96360e60b0840d9.js"></script>
+<script src="https://cpwebassets.codepen.io/assets/editor/iframe/iframeRefreshCSS-44fe83e49b63affec96918c9af88c0d80b209a862cf87ac46bc933074b8c557d.js"></script>
+<script src="https://cpwebassets.codepen.io/assets/editor/iframe/iframeRuntimeErrors-4f205f2c14e769b448bcf477de2938c681660d5038bc464e3700256713ebe261.js"></script>
+</head>
+
+<body>
+  
+
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>aa-web — Single Page Project</title>
+  <meta name="description" content="aa-web: a small single-page HTML project with hyperlinked buttons and sections.">
+  <!-- Favicon (replace with your own) -->
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#7c3aed; --glass: rgba(255,255,255,0.04);
+      --radius:12px; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#061022 0%, #071227 100%);color:#e6eef8}
+    .wrap{max-width:980px;margin:36px auto;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:18px;box-shadow:0 8px 30px rgba(2,6,23,0.7)}
+
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700;letter-spacing:0.6px}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:4px 0 0;color:var(--muted);font-size:14px}
+
+    nav.buttons{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+    a.btn{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:var(--glass);text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,0.03);backdrop-filter: blur(6px)}
+    a.btn:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(0,0,0,0.5)}
+    a.btn .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 4px 10px rgba(124,58,237,0.25)}
+
+    section{margin-top:26px;padding:18px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));border-radius:12px}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+    .card{padding:14px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border-radius:12px;border:1px solid rgba(255,255,255,0.02)}
+
+    footer{margin-top:18px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;align-items:center}
+
+    /* Responsive */
+    @media (max-width:840px){.grid{grid-template-columns:1fr}.logo{width:48px;height:48px}}
+  </style>
+
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">aa</div>
+        <div>
+          <h1>aa-web</h1>
+          <p class="lead">A single-page project template with a few linked buttons.</p>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <small style="color:var(--muted)">v1.0 • Single file</small>
+      </div>
+    </header>
+
+    <nav class="buttons" aria-label="quick links">
+      <!-- Internal anchor links -->
+      <a class="btn" href="#home"><span class="dot" aria-hidden=""></span>Home</a>
+      <a class="btn" href="#about"><span class="dot" aria-hidden=""></span>About</a>
+      <a class="btn" href="#projects"><span class="dot" aria-hidden=""></span>Projects</a>
+      <a class="btn" href="#contact"><span class="dot" aria-hidden=""></span>Contact</a>
+
+      <!-- External links -->
+      <a class="btn" href="https://example.com" target="_blank" rel="noopener">Visit example.com</a>
+      <a class="btn" href="mailto:hello@example.com">Email us</a>
+
+      <!-- Download link (points to file in same folder if you save it) -->
+      <a class="btn" id="downloadBtn" href="#download" download="aa-web.html">Download HTML</a>
+    </nav>
+
+    <section id="home">
+      <div class="grid">
+        <div class="card">
+          <h2 style="margin-top:0">Welcome to aa-web</h2>
+          <p style="color:var(--muted)">This is a compact, single-page HTML template. Use the buttons above to jump to sections or open external links. The file is intentionally self-contained and easy to tweak.</p>
+
+          <h3>How to use</h3>
+          <ul style="color:var(--muted)">
+            <li>Save this page as <code>aa-web.html</code>.</li>
+            <li>Open it in any modern browser.</li>
+            <li>Edit the links, text, or styles directly in the file.</li>
+          </ul>
+
+          <p style="margin-top:8px"><strong>Tip:</strong> Replace the example.com and mailto links with your own URLs.</p>
+        </div>
+
+        <aside class="card">
+          <h4 style="margin:0">Quick actions</h4>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+            <a class="btn" href="#projects">See projects</a>
+            <a class="btn" href="https://github.com/" target="_blank" rel="noopener">Open GitHub</a>
+            <button class="btn" id="themeToggle">Toggle theme (demo)</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="about" class="card">
+      <h2>About</h2>
+      <p style="color:var(--muted)">aa-web is a small demo template intended to be a starting point for landing pages, portfolios, or documentation. It's intentionally lightweight and easy to adapt.</p>
+    </section>
+
+    <section id="projects" class="card">
+      <h2>Projects</h2>
+      <p style="color:var(--muted)">Below are a few example project links. Replace these with links to your own work.</p>
+      <ul style="color:var(--muted)">
+        <li><a href="https://example.com/project1" target="_blank" rel="noopener">Project One</a></li>
+        <li><a href="https://example.com/project2" target="_blank" rel="noopener">Project Two</a></li>
+        <li><a href="https://example.com/project3" target="_blank" rel="noopener">Project Three</a></li>
+      </ul>
+    </section>
+
+    <section id="contact" class="card">
+      <h2>Contact</h2>
+      <p style="color:var(--muted)">Want to get in touch? Use the email link or the contact form below.</p>
+
+      <form id="contactForm" action="mailto:hello@example.com" method="post" enctype="text/plain">
+        <label style="display:block;margin-bottom:8px">
+          <span style="color:var(--muted);font-size:13px">Your email</span><br>
+          <input name="email" type="email" placeholder="you@example.com" required="" style="width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:inherit">
+        </label>
+        <label style="display:block;margin-bottom:8px">
+          <span style="color:var(--muted);font-size:13px">Message</span><br>
+          <textarea name="message" rows="4" placeholder="Hi — I'd like to say..." style="width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:inherit"></textarea>
+        </label>
+        <div style="display:flex;gap:8px">
+          <button type="submit" class="btn">Send (mail client)</button>
+          <button type="button" class="btn" id="clearForm">Clear</button>
+        </div>
+      </form>
+    </section>
+
+    <footer>
+      <div>© <span id="year">2025</span> aa-web</div>
+      <div style="color:var(--muted)">Made with ❤️ — single-file</div>
+    </footer>
+  </div>
+
+  <script>
+    // small interactive bits
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    document.getElementById('clearForm').addEventListener('click', function(){
+      document.getElementById('contactForm').reset();
+    });
+
+    // Theme toggle demo: switch to a light-ish theme by swapping CSS variables
+    const themeToggle = document.getElementById('themeToggle');
+    let light = false;
+    themeToggle && themeToggle.addEventListener('click', () => {
+      const r = document.documentElement.style;
+      if(!light){
+        r.setProperty('--bg','#f7fafc'); r.setProperty('--card','#ffffff'); r.setProperty('--muted','#546070'); r.setProperty('--accent','#6d28d9');
+        document.body.style.background = 'linear-gradient(180deg,#ffffff 0%, #f3f6fb 100%)';
+        light = true;
+      } else {
+        r.setProperty('--bg','#0f1724'); r.setProperty('--card','#0b1220'); r.setProperty('--muted','#9aa4b2'); r.setProperty('--accent','#7c3aed');
+        document.body.style.background = 'linear-gradient(180deg,#061022 0%, #071227 100%)';
+        light = false;
+      }
+    });
+
+    // Optional: make the download link download this file when hosted. If opened as file://, the default 'download' won't work — user may save page manually.
+    // For demo, wire the download button to create a blob and download the HTML content of the current page.
+
+    const downloadBtn = document.getElementById('downloadBtn');
+    downloadBtn && downloadBtn.addEventListener('click', function(e){
+      // prevent default anchor behaviour so we can generate a fresh HTML file
+      e.preventDefault();
+      const doctype = '<!doctype html>\n';
+      const html = doctype + document.documentElement.outerHTML;
+      const blob = new Blob([html], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'aa-web.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  </script>
+
+
+
+  
+  
+
+
+</body></html>
