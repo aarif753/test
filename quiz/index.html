@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Quiz App</title>
+    <title>Advanced Exam Quiz</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -133,6 +133,12 @@
             border-color: var(--primary);
         }
         
+        .option.selected {
+            background-color: #ffc107;
+            color: #000;
+            border-color: #ffc107;
+        }
+        
         .option.correct {
             background-color: #4bb543;
             color: white;
@@ -148,11 +154,6 @@
         .option.disabled {
             pointer-events: none;
             opacity: 0.7;
-        }
-        
-        .option.selected {
-            background-color: #ffc107;
-            color: #000;
         }
         
         .controls {
@@ -198,26 +199,20 @@
             color: white;
         }
         
+        .btn-submit-question {
+            background-color: #6c757d;
+            color: white;
+            margin-right: 10px;
+        }
+        
+        .btn-submit-question:hover {
+            background-color: #5a6268;
+        }
+        
         .btn-explanation {
             background-color: var(--info);
             color: white;
             margin-bottom: 15px;
-        }
-        
-        .submit-question-btn {
-            background-color: #6c757d;
-            color: white;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 10px;
-            transition: 0.3s;
-        }
-        
-        .submit-question-btn:hover {
-            background-color: #5a6268;
         }
         
         .modal {
@@ -265,7 +260,7 @@
             text-align: center;
         }
         
-        .explanation-media img {
+        .explanation-media img, .explanation-media video {
             max-width: 100%;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
@@ -370,8 +365,11 @@
         }
         
         .skipped-status {
-            background-color: #e2e3e5;
-            color: #383d41;
+            background-color: #e5e7eb;
+            color: #4b5563;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
         }
         
         .review-options {
@@ -462,27 +460,6 @@
             z-index: 100;
         }
         
-        .confetti {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
-            opacity: 0;
-            z-index: 999;
-            animation: confetti 5s ease-in-out;
-        }
-        
-        @keyframes confetti {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh) rotate(720deg);
-                opacity: 0;
-            }
-        }
-        
         .loading-screen {
             position: fixed;
             top: 0;
@@ -511,6 +488,31 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            z-index: 999;
+            animation: confetti 5s ease-in-out;
+        }
+        
+        @keyframes confetti {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -521,7 +523,7 @@
 
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-graduation-cap"></i> Advanced Quiz App</h1>
+            <h1><i class="fas fa-graduation-cap"></i> Advanced Exam Quiz</h1>
             <p>Test your knowledge and improve your skills</p>
         </div>
 
@@ -541,7 +543,7 @@
                 <div class="question-img-container">
                     <img id="question-img" class="question-img" src="" alt="Question Image">
                 </div>
-                <button class="btn btn-explanation" id="explanationBtn" style="display: none;"><i class="fas fa-lightbulb"></i> Explanation</button>
+                <button class="btn btn-explanation hidden" id="explanationBtn"><i class="fas fa-lightbulb"></i> Explanation</button>
             </div>
 
             <div class="options-container" id="optionsContainer">
@@ -551,8 +553,9 @@
             <div class="controls">
                 <button class="btn btn-prev" id="prevBtn"><i class="fas fa-arrow-left"></i> Previous</button>
                 <div>
+                    <button class="btn btn-submit-question hidden" id="submitQuestionBtn"><i class="fas fa-check"></i> Submit Answer</button>
                     <button class="btn btn-next" id="nextBtn">Next <i class="fas fa-arrow-right"></i></button>
-                    <button class="btn btn-submit" id="submitBtn" style="display: none;"><i class="fas fa-paper-plane"></i> Submit</button>
+                    <button class="btn btn-submit hidden" id="submitBtn"><i class="fas fa-paper-plane"></i> Submit Quiz</button>
                 </div>
             </div>
         </div>
@@ -573,16 +576,12 @@
                     <p class="incorrect-stat" id="incorrectAnswers">0</p>
                 </div>
                 <div class="stat-card">
-                    <h3>Skipped Questions</h3>
+                    <h3>Skipped</h3>
                     <p class="time-stat" id="skippedAnswers">0</p>
                 </div>
                 <div class="stat-card">
-                    <h3>Accuracy</h3>
-                    <p class="accuracy-stat" id="accuracy">0%</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Time Taken</h3>
-                    <p class="time-stat" id="timeTaken">00:00:00</p>
+                    <h3>Score</h3>
+                    <p class="accuracy-stat" id="finalScore">0</p>
                 </div>
             </div>
 
@@ -598,8 +597,9 @@
                         <div class="progress-bar" id="resultsProgressBar" style="width: 0%"></div>
                     </div>
                     <p>You answered <span id="correctCount">0</span> out of <span id="totalCount">0</span> questions correctly.</p>
-                    <p>Your overall accuracy is <span id="accuracyPercent">0</span>%.</p>
+                    <p>Your score: <span id="scoreSummary">0</span> (Correct: +4 each, Incorrect: -1 each)</p>
                     <p>Time spent: <span id="totalTimeSpent">0</span> minutes.</p>
+                    <p>Accuracy: <span id="accuracyPercent">0</span>%</p>
                 </div>
 
                 <div class="tab-content" id="analysisTab">
@@ -633,7 +633,11 @@
             <button class="close-btn" id="closeExplanation">&times;</button>
             <h3 class="modal-title"><i class="fas fa-lightbulb"></i> Explanation</h3>
             <div class="explanation-media">
-                <img id="explanation-img" src="" alt="Explanation Image">
+                <img id="explanation-img" src="" alt="Explanation Image" style="display: none;">
+                <video id="explanation-video" controls style="display: none;">
+                    <source src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
             </div>
             <div class="explanation-text" id="explanationText"></div>
         </div>
@@ -646,585 +650,605 @@
 
     <script>
         // Quiz State
-const quizState = {
-    currentQuestionIndex: 0,
-    score: 0,
-    correctAnswers: 0,
-    incorrectAnswers: 0,
-    skippedAnswers: 0,
-    timeSpent: 0,
-    questionTimes: [],
-    startTime: null,
-    endTime: null,
-    answers: [],
-    completed: false,
-    quizData: null
-};
+        const quizState = {
+            currentQuestionIndex: 0,
+            score: 0,
+            correctAnswers: 0,
+            incorrectAnswers: 0,
+            skippedAnswers: 0,
+            timeSpent: 0,
+            questionTimes: [],
+            startTime: null,
+            endTime: null,
+            answers: [],
+            completed: false,
+            questions: []
+        };
 
-// DOM Elements
-const elements = {
-    quizContainer: document.getElementById('quizContainer'),
-    resultsContainer: document.getElementById('resultsContainer'),
-    loadingScreen: document.getElementById('loadingScreen'),
-    questionNumber: document.getElementById('questionNumber'),
-    questionImage: document.getElementById('question-img'),
-    optionsContainer: document.getElementById('optionsContainer'),
-    explanationBtn: document.getElementById('explanationBtn'),
-    prevBtn: document.getElementById('prevBtn'),
-    nextBtn: document.getElementById('nextBtn'),
-    submitBtn: document.getElementById('submitBtn'),
-    clock: document.getElementById('clock'),
-    floatingClock: document.getElementById('floatingClock'),
-    currentQuestion: document.getElementById('currentQuestion'),
-    totalQuestions: document.getElementById('totalQuestions'),
-    currentScore: document.getElementById('currentScore'),
-    progressBar: document.getElementById('progressBar'),
-    correctAnswers: document.getElementById('correctAnswers'),
-    incorrectAnswers: document.getElementById('incorrectAnswers'),
-    skippedAnswers: document.getElementById('skippedAnswers'),
-    accuracy: document.getElementById('accuracy'),
-    timeTaken: document.getElementById('timeTaken'),
-    correctCount: document.getElementById('correctCount'),
-    totalCount: document.getElementById('totalCount'),
-    accuracyPercent: document.getElementById('accuracyPercent'),
-    totalTimeSpent: document.getElementById('totalTimeSpent'),
-    questionReview: document.getElementById('questionReview'),
-    resultsProgressBar: document.getElementById('resultsProgressBar'),
-    avgTimePerQuestion: document.getElementById('avgTimePerQuestion'),
-    fastestQuestion: document.getElementById('fastestQuestion'),
-    fastestTime: document.getElementById('fastestTime'),
-    slowestQuestion: document.getElementById('slowestQuestion'),
-    slowestTime: document.getElementById('slowestTime'),
-    timeSpentChart: document.getElementById('timeSpentChart'),
-    explanationModal: document.getElementById('explanationModal'),
-    closeExplanation: document.getElementById('closeExplanation'),
-    explanationImage: document.getElementById('explanation-img'),
-    explanationText: document.getElementById('explanationText'),
-    restartQuizBtn: document.getElementById('restartQuizBtn'),
-    reviewAnswersBtn: document.getElementById('reviewAnswersBtn'),
-    tabs: document.querySelectorAll('.tab'),
-    tabContents: document.querySelectorAll('.tab-content'),
-    submitQuestionBtn: document.createElement('button')
-};
+        // DOM Elements
+        const elements = {
+            quizContainer: document.getElementById('quizContainer'),
+            resultsContainer: document.getElementById('resultsContainer'),
+            loadingScreen: document.getElementById('loadingScreen'),
+            questionNumber: document.getElementById('questionNumber'),
+            questionImage: document.getElementById('question-img'),
+            optionsContainer: document.getElementById('optionsContainer'),
+            explanationBtn: document.getElementById('explanationBtn'),
+            prevBtn: document.getElementById('prevBtn'),
+            nextBtn: document.getElementById('nextBtn'),
+            submitQuestionBtn: document.getElementById('submitQuestionBtn'),
+            submitBtn: document.getElementById('submitBtn'),
+            clock: document.getElementById('clock'),
+            floatingClock: document.getElementById('floatingClock'),
+            currentQuestion: document.getElementById('currentQuestion'),
+            totalQuestions: document.getElementById('totalQuestions'),
+            currentScore: document.getElementById('currentScore'),
+            progressBar: document.getElementById('progressBar'),
+            correctAnswers: document.getElementById('correctAnswers'),
+            incorrectAnswers: document.getElementById('incorrectAnswers'),
+            skippedAnswers: document.getElementById('skippedAnswers'),
+            finalScore: document.getElementById('finalScore'),
+            timeTaken: document.getElementById('totalTimeSpent'),
+            accuracy: document.getElementById('accuracyPercent'),
+            correctCount: document.getElementById('correctCount'),
+            totalCount: document.getElementById('totalCount'),
+            scoreSummary: document.getElementById('scoreSummary'),
+            resultsProgressBar: document.getElementById('resultsProgressBar'),
+            avgTimePerQuestion: document.getElementById('avgTimePerQuestion'),
+            fastestQuestion: document.getElementById('fastestQuestion'),
+            fastestTime: document.getElementById('fastestTime'),
+            slowestQuestion: document.getElementById('slowestQuestion'),
+            slowestTime: document.getElementById('slowestTime'),
+            timeSpentChart: document.getElementById('timeSpentChart'),
+            explanationModal: document.getElementById('explanationModal'),
+            closeExplanation: document.getElementById('closeExplanation'),
+            explanationImage: document.getElementById('explanation-img'),
+            explanationVideo: document.getElementById('explanation-video'),
+            explanationText: document.getElementById('explanationText'),
+            restartQuizBtn: document.getElementById('restartQuizBtn'),
+            reviewAnswersBtn: document.getElementById('reviewAnswersBtn'),
+            tabs: document.querySelectorAll('.tab'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            questionReview: document.getElementById('questionReview')
+        };
 
-// Create submit button
-elements.submitQuestionBtn.className = 'submit-question-btn';
-elements.submitQuestionBtn.innerHTML = '<i class="fas fa-check"></i> Submit Answer';
-elements.submitQuestionBtn.style.display = 'none';
-document.querySelector('.controls').insertBefore(elements.submitQuestionBtn, document.querySelector('.controls').firstChild);
+        // Timer Variables
+        let quizTimer;
+        let questionStartTime;
 
-// Timer Variables
-let quizTimer;
-let questionStartTime;
+        // Initialize the quiz
+        async function initQuiz() {
+            try {
+                // Load questions from JSON file
+                const response = await fetch('questions.json');
+                if (!response.ok) throw new Error('Failed to load questions');
+                
+                const data = await response.json();
+                quizState.questions = data.questions;
+                quizState.questionTimes = Array(quizState.questions.length).fill(0);
+                quizState.answers = Array(quizState.questions.length).fill(null);
+                
+                // Set up quiz info
+                elements.totalQuestions.textContent = quizState.questions.length;
+                
+                // Hide loading screen and show quiz
+                elements.loadingScreen.style.display = 'none';
+                elements.quizContainer.style.display = 'block';
+                
+                // Start the quiz
+                startQuiz();
+            } catch (error) {
+                console.error('Error loading quiz:', error);
+                elements.loadingScreen.innerHTML = `
+                    <div class="text-red-500 text-center">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-4"></i>
+                        <h2 class="text-2xl font-bold mb-2">Failed to Load Quiz</h2>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+                            <i class="fas fa-sync-alt mr-2"></i> Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
 
-// Initialize the quiz
-function initQuiz() {
-    // Load quiz data from JSON
-    fetch('quiz-data.json')
-        .then(response => response.json())
-        .then(data => {
-            quizState.quizData = data;
-            quizState.questionTimes = Array(data.totalQuestions).fill(0);
-            quizState.answers = Array(data.totalQuestions).fill(null);
+        // Start the quiz
+        function startQuiz() {
+            quizState.startTime = new Date();
+            questionStartTime = new Date();
             
-            // Set up quiz info
-            elements.totalQuestions.textContent = data.totalQuestions;
+            // Start the timer
+            startTimer();
             
-            // Hide loading screen and show quiz
-            elements.loadingScreen.style.display = 'none';
+            // Load the first question
+            loadQuestion(quizState.currentQuestionIndex);
+            
+            // Update the progress bar
+            updateProgressBar();
+        }
+
+        // Load a question
+        function loadQuestion(index) {
+            if (index < 0 || index >= quizState.questions.length) return;
+            
+            // Record time spent on previous question
+            if (questionStartTime && quizState.currentQuestionIndex !== index) {
+                const now = new Date();
+                const timeSpent = Math.floor((now - questionStartTime) / 1000);
+                quizState.questionTimes[quizState.currentQuestionIndex] = timeSpent;
+                quizState.timeSpent += timeSpent;
+            }
+            
+            quizState.currentQuestionIndex = index;
+            questionStartTime = new Date();
+            
+            const question = quizState.questions[index];
+            
+            // Update question number
+            elements.questionNumber.textContent = index + 1;
+            elements.currentQuestion.textContent = index + 1;
+            
+            // Set question image
+            elements.questionImage.src = question.image;
+            elements.questionImage.alt = `Question ${index + 1}`;
+            
+            // Clear previous options
+            elements.optionsContainer.innerHTML = '';
+            
+            // Create new options
+            question.options.forEach((option, i) => {
+                const optionElement = document.createElement('button');
+                optionElement.className = 'option';
+                optionElement.textContent = String.fromCharCode(65 + i) + ') ' + option.text;
+                optionElement.dataset.index = i + 1; // Using 1-based index for answers
+                
+                // Check if this question was already answered
+                if (quizState.answers[index] !== null) {
+                    if (quizState.answers[index] === i + 1) {
+                        optionElement.classList.add('selected');
+                    }
+                    if (i + 1 === question.answer) {
+                        optionElement.classList.add('correct');
+                    } else if (quizState.answers[index] === i + 1 && quizState.answers[index] !== question.answer) {
+                        optionElement.classList.add('wrong');
+                    }
+                    optionElement.disabled = true;
+                }
+                
+                optionElement.addEventListener('click', () => selectOption(i + 1));
+                elements.optionsContainer.appendChild(optionElement);
+            });
+            
+            // Update navigation buttons
+            elements.prevBtn.disabled = index === 0;
+            elements.nextBtn.disabled = index === quizState.questions.length - 1;
+            
+            // Show submit button if on last question
+            elements.submitBtn.classList.toggle('hidden', index !== quizState.questions.length - 1);
+            
+            // Set up explanation button
+            elements.explanationBtn.onclick = () => showExplanation(index);
+            
+            // Hide submit question button and explanation button initially
+            elements.submitQuestionBtn.classList.add('hidden');
+            elements.explanationBtn.classList.add('hidden');
+            
+            // Update the progress bar
+            updateProgressBar();
+        }
+
+        // Select an option
+        function selectOption(optionIndex) {
+            const options = document.querySelectorAll('.option');
+            
+            // Remove previous selection
+            options.forEach(opt => opt.classList.remove('selected'));
+            
+            // Mark current selection
+            options[optionIndex - 1].classList.add('selected');
+            
+            // Show submit question button
+            elements.submitQuestionBtn.classList.remove('hidden');
+        }
+
+        // Submit selected answer
+        function submitAnswer() {
+            const selectedOption = document.querySelector('.option.selected');
+            if (!selectedOption) {
+                alert('Please select an answer first.');
+                return;
+            }
+
+            const optionIndex = parseInt(selectedOption.dataset.index);
+            const currentQuestion = quizState.questions[quizState.currentQuestionIndex];
+            
+            // Mark the answer in the state
+            quizState.answers[quizState.currentQuestionIndex] = optionIndex;
+            
+            // Disable all options
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => option.disabled = true);
+            
+            // Mark correct and incorrect answers
+            options.forEach((option, i) => {
+                if (i + 1 === currentQuestion.answer) {
+                    option.classList.add('correct');
+                } else if (parseInt(option.dataset.index) === optionIndex && parseInt(option.dataset.index) !== currentQuestion.answer) {
+                    option.classList.add('wrong');
+                }
+            });
+            
+            // Update score (NEET pattern: +4 for correct, -1 for incorrect)
+            if (optionIndex === currentQuestion.answer) {
+                quizState.correctAnswers++;
+                quizState.score += 4;
+            } else {
+                quizState.incorrectAnswers++;
+                quizState.score -= 1;
+            }
+            
+            elements.currentScore.textContent = quizState.score;
+            
+            // Hide submit question button, show explanation button
+            elements.submitQuestionBtn.classList.add('hidden');
+            elements.explanationBtn.classList.remove('hidden');
+            
+            // Auto-advance to next question after 2 seconds (optional)
+            if (quizState.currentQuestionIndex < quizState.questions.length - 1) {
+                setTimeout(() => {
+                    loadQuestion(quizState.currentQuestionIndex + 1);
+                }, 2000);
+            }
+        }
+
+        // Show explanation
+        function showExplanation(questionIndex) {
+            const question = quizState.questions[questionIndex];
+            const explanation = question.explanation;
+            
+            // Set explanation content
+            elements.explanationText.textContent = explanation.text || "Explanation not available";
+            
+            // Show image or video
+            if (explanation.video) {
+                elements.explanationVideo.style.display = 'block';
+                elements.explanationImage.style.display = 'none';
+                elements.explanationVideo.src = explanation.video;
+            } else if (explanation.image) {
+                elements.explanationImage.style.display = 'block';
+                elements.explanationVideo.style.display = 'none';
+                elements.explanationImage.src = explanation.image;
+            } else {
+                elements.explanationImage.style.display = 'none';
+                elements.explanationVideo.style.display = 'none';
+            }
+            
+            // Show modal
+            elements.explanationModal.style.display = 'block';
+        }
+
+        // Start the quiz timer
+        function startTimer() {
+            quizTimer = setInterval(() => {
+                const now = new Date();
+                const elapsed = Math.floor((now - quizState.startTime) / 1000);
+                const hours = Math.floor(elapsed / 3600);
+                const minutes = Math.floor((elapsed % 3600) / 60);
+                const seconds = elapsed % 60;
+                
+                const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                elements.clock.textContent = timeString;
+                elements.floatingClock.textContent = timeString;
+                
+                // Check if time limit is exceeded
+                if (quizState.questions[0]?.timeLimit && elapsed >= quizState.questions[0].timeLimit) {
+                    clearInterval(quizTimer);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        // Submit the quiz
+        function submitQuiz() {
+            clearInterval(quizTimer);
+            quizState.endTime = new Date();
+            quizState.completed = true;
+            
+            // Calculate final time spent
+            const totalTime = Math.floor((quizState.endTime - quizState.startTime) / 1000);
+            quizState.timeSpent = totalTime;
+            
+            // Calculate skipped answers
+            quizState.skippedAnswers = quizState.answers.filter(a => a === null).length;
+            
+            // Show results
+            showResults();
+            
+            // Create confetti effect if passed (assuming 50% is passing)
+            if (quizState.score >= (quizState.questions.length * 2)) {
+                createConfetti();
+            }
+        }
+
+        // Show results
+        function showResults() {
+            elements.quizContainer.style.display = 'none';
+            elements.resultsContainer.style.display = 'block';
+            
+            // Calculate accuracy
+            const accuracy = Math.round((quizState.correctAnswers / quizState.questions.length) * 100);
+            
+            // Set results
+            elements.correctAnswers.textContent = quizState.correctAnswers;
+            elements.incorrectAnswers.textContent = quizState.incorrectAnswers;
+            elements.skippedAnswers.textContent = quizState.skippedAnswers;
+            elements.finalScore.textContent = quizState.score;
+            
+            // Format time taken
+            const hours = Math.floor(quizState.timeSpent / 3600);
+            const minutes = Math.floor((quizState.timeSpent % 3600) / 60);
+            const seconds = quizState.timeSpent % 60;
+            const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            elements.timeTaken.textContent = timeString;
+            
+            // Set summary info
+            elements.correctCount.textContent = quizState.correctAnswers;
+            elements.totalCount.textContent = quizState.questions.length;
+            elements.accuracy.textContent = accuracy;
+            elements.scoreSummary.textContent = quizState.score;
+            elements.totalTimeSpent.textContent = Math.round(minutes + seconds / 60);
+            
+            // Update results progress bar
+            elements.resultsProgressBar.style.width = `${accuracy}%`;
+            
+            // Generate question review
+            generateQuestionReview();
+            
+            // Generate time analysis
+            generateTimeAnalysis();
+        }
+
+        // Generate question review
+        function generateQuestionReview() {
+            elements.questionReview.innerHTML = '';
+            
+            quizState.questions.forEach((question, index) => {
+                const userAnswer = quizState.answers[index];
+                const isCorrect = userAnswer === question.answer;
+                const isSkipped = userAnswer === null;
+                
+                const reviewItem = document.createElement('div');
+                reviewItem.className = 'review-item';
+                
+                const reviewQuestion = document.createElement('div');
+                reviewQuestion.className = 'review-question';
+                
+                const questionText = document.createElement('div');
+                questionText.innerHTML = `<strong>Question ${index + 1}:</strong>`;
+                
+                let status;
+                if (isSkipped) {
+                    status = `<span class="skipped-status">Skipped</span>`;
+                } else if (isCorrect) {
+                    status = `<span class="correct-status">Correct</span>`;
+                } else {
+                    status = `<span class="incorrect-status">Incorrect</span>`;
+                }
+                
+                reviewQuestion.appendChild(questionText);
+                reviewQuestion.innerHTML += status;
+                
+                const questionImage = document.createElement('img');
+                questionImage.src = question.image;
+                questionImage.className = 'question-img';
+                questionImage.alt = `Question ${index + 1}`;
+                
+                const reviewOptions = document.createElement('div');
+                reviewOptions.className = 'review-options';
+                
+                const userSelection = document.createElement('p');
+                if (isSkipped) {
+                    userSelection.textContent = 'You skipped this question';
+                } else {
+                    const selectedOption = String.fromCharCode(64 + userAnswer);
+                    userSelection.textContent = `Your answer: ${selectedOption}`;
+                }
+                
+                const correctAnswer = document.createElement('p');
+                const correctOption = String.fromCharCode(64 + question.answer);
+                correctAnswer.textContent = `Correct answer: ${correctOption}`;
+                
+                const explanationBtn = document.createElement('button');
+                explanationBtn.className = 'btn btn-explanation';
+                explanationBtn.innerHTML = '<i class="fas fa-lightbulb"></i> Show Explanation';
+                explanationBtn.onclick = () => showExplanation(index);
+                
+                reviewItem.appendChild(reviewQuestion);
+                reviewItem.appendChild(questionImage);
+                reviewItem.appendChild(userSelection);
+                reviewItem.appendChild(correctAnswer);
+                reviewItem.appendChild(explanationBtn);
+                
+                elements.questionReview.appendChild(reviewItem);
+            });
+        }
+
+        // Generate time analysis
+        function generateTimeAnalysis() {
+            // Calculate average time
+            const answeredQuestions = quizState.questionTimes.filter(time => time > 0);
+            const avgTime = answeredQuestions.length > 0 
+                ? Math.round(answeredQuestions.reduce((a, b) => a + b, 0) / answeredQuestions.length) 
+                : 0;
+            
+            // Find fastest and slowest questions
+            let fastestIndex = 0;
+            let slowestIndex = 0;
+            let fastestTime = answeredQuestions.length > 0 ? answeredQuestions[0] : 0;
+            let slowestTime = answeredQuestions.length > 0 ? answeredQuestions[0] : 0;
+            
+            for (let i = 1; i < answeredQuestions.length; i++) {
+                if (answeredQuestions[i] < fastestTime) {
+                    fastestTime = answeredQuestions[i];
+                    fastestIndex = i;
+                }
+                if (answeredQuestions[i] > slowestTime) {
+                    slowestTime = answeredQuestions[i];
+                    slowestIndex = i;
+                }
+            }
+            
+            // Set time analysis
+            elements.avgTimePerQuestion.textContent = avgTime;
+            elements.fastestQuestion.textContent = fastestIndex + 1;
+            elements.fastestTime.textContent = fastestTime;
+            elements.slowestQuestion.textContent = slowestIndex + 1;
+            elements.slowestTime.textContent = slowestTime;
+            
+            // Simple chart visualization
+            elements.timeSpentChart.innerHTML = '';
+            const maxTime = Math.max(...quizState.questionTimes, 1);
+            
+            quizState.questionTimes.forEach((time, index) => {
+                if (time > 0) {
+                    const bar = document.createElement('div');
+                    bar.style.height = `${(time / maxTime) * 100}%`;
+                    bar.style.width = '20px';
+                    bar.style.backgroundColor = time === fastestTime ? '#4CAF50' : time === slowestTime ? '#F44336' : '#2196F3';
+                    bar.style.display = 'inline-block';
+                    bar.style.margin = '0 2px';
+                    bar.style.position = 'relative';
+                    bar.title = `Q${index + 1}: ${time}s`;
+                    
+                    const label = document.createElement('div');
+                    label.textContent = index + 1;
+                    label.style.position = 'absolute';
+                    label.style.bottom = '-20px';
+                    label.style.left = '0';
+                    label.style.fontSize = '10px';
+                    label.style.textAlign = 'center';
+                    label.style.width = '20px';
+                    
+                    bar.appendChild(label);
+                    elements.timeSpentChart.appendChild(bar);
+                }
+            });
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const progress = ((quizState.currentQuestionIndex + 1) / quizState.questions.length) * 100;
+            elements.progressBar.style.width = `${progress}%`;
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.width = `${Math.random() * 10 + 5}px`;
+                confetti.style.height = `${Math.random() * 10 + 5}px`;
+                confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                document.body.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        // Event Listeners
+        elements.prevBtn.addEventListener('click', () => {
+            if (quizState.currentQuestionIndex > 0) {
+                loadQuestion(quizState.currentQuestionIndex - 1);
+            }
+        });
+
+        elements.nextBtn.addEventListener('click', () => {
+            if (quizState.currentQuestionIndex < quizState.questions.length - 1) {
+                loadQuestion(quizState.currentQuestionIndex + 1);
+            }
+        });
+
+        elements.submitQuestionBtn.addEventListener('click', submitAnswer);
+
+        elements.submitBtn.addEventListener('click', submitQuiz);
+
+        elements.closeExplanation.addEventListener('click', () => {
+            elements.explanationModal.style.display = 'none';
+            // Pause video when closing
+            if (elements.explanationVideo) {
+                elements.explanationVideo.pause();
+            }
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (event) => {
+            if (event.target === elements.explanationModal) {
+                elements.explanationModal.style.display = 'none';
+                // Pause video when closing
+                if (elements.explanationVideo) {
+                    elements.explanationVideo.pause();
+                }
+            }
+        });
+
+        elements.restartQuizBtn.addEventListener('click', () => {
+            // Reset quiz state
+            quizState.currentQuestionIndex = 0;
+            quizState.score = 0;
+            quizState.correctAnswers = 0;
+            quizState.incorrectAnswers = 0;
+            quizState.skippedAnswers = 0;
+            quizState.timeSpent = 0;
+            quizState.questionTimes = Array(quizState.questions.length).fill(0);
+            quizState.answers = Array(quizState.questions.length).fill(null);
+            quizState.completed = false;
+            
+            // Reset UI
+            elements.currentScore.textContent = '0';
+            elements.resultsContainer.style.display = 'none';
             elements.quizContainer.style.display = 'block';
             
-            // Start the quiz
+            // Start quiz again
             startQuiz();
-        })
-        .catch(error => {
-            console.error('Error loading quiz data:', error);
-            elements.loadingScreen.innerHTML = '<h2>Error loading quiz. Please try again.</h2>';
         });
-}
 
-// Start the quiz
-function startQuiz() {
-    quizState.startTime = new Date();
-    questionStartTime = new Date();
-    
-    // Start the timer
-    startTimer();
-    
-    // Load the first question
-    loadQuestion(quizState.currentQuestionIndex);
-    
-    // Update the progress bar
-    updateProgressBar();
-}
-
-// Load a question
-function loadQuestion(index) {
-    if (index < 0 || index >= quizState.quizData.questions.length) return;
-    
-    // Record time spent on previous question
-    if (questionStartTime && quizState.currentQuestionIndex !== index) {
-        const now = new Date();
-        const timeSpent = Math.floor((now - questionStartTime) / 1000);
-        quizState.questionTimes[quizState.currentQuestionIndex] = timeSpent;
-        quizState.timeSpent += timeSpent;
-        
-        // Check if question was skipped
-        if (quizState.answers[quizState.currentQuestionIndex] === null) {
-            quizState.skippedAnswers++;
-        }
-    }
-    
-    quizState.currentQuestionIndex = index;
-    questionStartTime = new Date();
-    
-    const question = quizState.quizData.questions[index];
-    
-    // Update question number
-    elements.questionNumber.textContent = index + 1;
-    elements.currentQuestion.textContent = index + 1;
-    
-    // Set question image
-    elements.questionImage.src = question.image;
-    elements.questionImage.alt = `Question ${index + 1}`;
-    
-    // Clear previous options
-    elements.optionsContainer.innerHTML = '';
-    
-    // Create new options
-    question.options.forEach((option, i) => {
-        const optionElement = document.createElement('button');
-        optionElement.className = 'option';
-        optionElement.textContent = option;
-        optionElement.dataset.index = i;
-        
-        // Check if this question was already answered
-        if (quizState.answers[index] !== null) {
-            if (quizState.answers[index] === i) {
-                optionElement.classList.add('selected-option');
-            }
-            if (i === question.correctIndex) {
-                optionElement.classList.add('correct-option');
-            } else if (quizState.answers[index] === i && quizState.answers[index] !== question.correctIndex) {
-                optionElement.classList.add('wrong-option');
-            }
-            optionElement.disabled = true;
-        }
-        
-        optionElement.addEventListener('click', () => selectOption(i));
-        elements.optionsContainer.appendChild(optionElement);
-    });
-    
-    // Update navigation buttons
-    elements.prevBtn.disabled = index === 0;
-    elements.nextBtn.disabled = index === quizState.quizData.questions.length - 1;
-    
-    // Show submit button if on last question
-    elements.submitBtn.style.display = index === quizState.quizData.questions.length - 1 ? 'inline-block' : 'none';
-    
-    // Set up explanation button
-    elements.explanationBtn.onclick = () => showExplanation(index);
-    
-    // Hide explanation button until answer is submitted
-    elements.explanationBtn.style.display = quizState.answers[index] !== null ? 'inline-block' : 'none';
-    
-    // Hide submit button initially
-    elements.submitQuestionBtn.style.display = 'none';
-    
-    // Update the progress bar
-    updateProgressBar();
-}
-
-// Select an option
-function selectOption(optionIndex) {
-    // Remove previous selection
-    document.querySelectorAll('.option').forEach(opt => {
-        opt.classList.remove('selected');
-    });
-    
-    // Mark current selection
-    const selectedOption = document.querySelector(`.option[data-index="${optionIndex}"]`);
-    selectedOption.classList.add('selected');
-    
-    // Show submit button
-    elements.submitQuestionBtn.style.display = 'inline-block';
-}
-
-// Submit answer for current question
-function submitAnswer() {
-    const selectedOption = document.querySelector('.option.selected');
-    if (!selectedOption) {
-        alert('Please select an answer first.');
-        return;
-    }
-
-    const selectedIndex = parseInt(selectedOption.dataset.index);
-    const currentQuestion = quizState.quizData.questions[quizState.currentQuestionIndex];
-    
-    // Mark the answer in the state
-    quizState.answers[quizState.currentQuestionIndex] = selectedIndex;
-    
-    // Disable all options
-    document.querySelectorAll('.option').forEach(option => option.disabled = true);
-    
-    // Mark correct and incorrect answers
-    document.querySelectorAll('.option').forEach((option, i) => {
-        if (i === currentQuestion.correctIndex) {
-            option.classList.add('correct');
-        } else if (i === selectedIndex && i !== currentQuestion.correctIndex) {
-            option.classList.add('wrong');
-        }
-    });
-    
-    // Update score
-    if (selectedIndex === currentQuestion.correctIndex) {
-        quizState.correctAnswers++;
-        quizState.score = Math.round((quizState.correctAnswers / quizState.quizData.totalQuestions) * 100);
-        elements.currentScore.textContent = quizState.score;
-    } else {
-        quizState.incorrectAnswers++;
-    }
-    
-    // Hide submit button, show explanation button
-    elements.submitQuestionBtn.style.display = 'none';
-    elements.explanationBtn.style.display = 'inline-block';
-    
-    // Auto-advance to next question after 1.5 seconds if not last question
-    if (quizState.currentQuestionIndex < quizState.quizData.questions.length - 1) {
-        setTimeout(() => {
-            loadQuestion(quizState.currentQuestionIndex + 1);
-        }, 1500);
-    }
-}
-
-// Show explanation
-function showExplanation(questionIndex) {
-    const question = quizState.quizData.questions[questionIndex];
-    const explanation = question.explanation;
-    
-    // Check if answer was submitted
-    if (quizState.answers[questionIndex] === null) {
-        alert('Please submit your answer first to view the explanation.');
-        return;
-    }
-    
-    // Set explanation content
-    elements.explanationText.textContent = explanation.text;
-    elements.explanationImage.src = explanation.image;
-    elements.explanationImage.alt = `Explanation for question ${questionIndex + 1}`;
-    
-    // Show modal
-    elements.explanationModal.style.display = 'block';
-}
-
-// Start the quiz timer
-function startTimer() {
-    quizTimer = setInterval(() => {
-        const now = new Date();
-        const elapsed = Math.floor((now - quizState.startTime) / 1000);
-        const hours = Math.floor(elapsed / 3600);
-        const minutes = Math.floor((elapsed % 3600) / 60);
-        const seconds = elapsed % 60;
-        
-        const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        elements.clock.textContent = timeString;
-        elements.floatingClock.textContent = timeString;
-        
-        // Check if time limit is exceeded
-        if (quizState.quizData.timeLimit && elapsed >= quizState.quizData.timeLimit) {
-            clearInterval(quizTimer);
-            submitQuiz();
-        }
-    }, 1000);
-}
-
-// Submit the quiz
-function submitQuiz() {
-    clearInterval(quizTimer);
-    quizState.endTime = new Date();
-    quizState.completed = true;
-    
-    // Calculate final time spent
-    const totalTime = Math.floor((quizState.endTime - quizState.startTime) / 1000);
-    quizState.timeSpent = totalTime;
-    
-    // Calculate skipped answers
-    quizState.skippedAnswers = quizState.answers.filter(answer => answer === null).length;
-    
-    // Show results
-    showResults();
-    
-    // Create confetti effect if passed
-    if (quizState.score >= quizState.quizData.passingScore) {
-        createConfetti();
-    }
-}
-
-// Show results
-function showResults() {
-    elements.quizContainer.style.display = 'none';
-    elements.resultsContainer.style.display = 'block';
-    
-    // Calculate accuracy
-    const accuracy = Math.round((quizState.correctAnswers / quizState.quizData.totalQuestions) * 100);
-    
-    // Set results
-    elements.correctAnswers.textContent = quizState.correctAnswers;
-    elements.incorrectAnswers.textContent = quizState.incorrectAnswers;
-    elements.skippedAnswers.textContent = quizState.skippedAnswers;
-    elements.accuracy.textContent = `${accuracy}%`;
-    
-    // Format time taken
-    const hours = Math.floor(quizState.timeSpent / 3600);
-    const minutes = Math.floor((quizState.timeSpent % 3600) / 60);
-    const seconds = quizState.timeSpent % 60;
-    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    elements.timeTaken.textContent = timeString;
-    
-    // Set summary info
-    elements.correctCount.textContent = quizState.correctAnswers;
-    elements.totalCount.textContent = quizState.quizData.totalQuestions;
-    elements.accuracyPercent.textContent = accuracy;
-    elements.totalTimeSpent.textContent = Math.round(minutes + seconds / 60);
-    
-    // Update results progress bar
-    elements.resultsProgressBar.style.width = `${accuracy}%`;
-    
-    // Generate question review
-    generateQuestionReview();
-    
-    // Generate time analysis
-    generateTimeAnalysis();
-}
-
-// Generate question review
-function generateQuestionReview() {
-    elements.questionReview.innerHTML = '';
-    
-    quizState.quizData.questions.forEach((question, index) => {
-        const userAnswer = quizState.answers[index];
-        const isCorrect = userAnswer === question.correctIndex;
-        const isSkipped = userAnswer === null;
-        
-        const reviewItem = document.createElement('div');
-        reviewItem.className = 'review-item';
-        
-        const reviewQuestion = document.createElement('div');
-        reviewQuestion.className = 'review-question';
-        
-        const questionText = document.createElement('div');
-        questionText.innerHTML = `<strong>Question ${index + 1}:</strong> ${question.text} <br><small>Difficulty: ${question.difficulty}</small>`;
-        
-        const status = document.createElement('div');
-        status.className = `review-status ${
-            isSkipped ? 'skipped-status' : 
-            isCorrect ? 'correct-status' : 'incorrect-status'
-        }`;
-        status.textContent = isSkipped ? 'Skipped' : (isCorrect ? 'Correct' : 'Incorrect');
-        
-        reviewQuestion.appendChild(questionText);
-        reviewQuestion.appendChild(status);
-        
-        const reviewOptions = document.createElement('div');
-        reviewOptions.className = 'review-options';
-        
-        question.options.forEach((option, i) => {
-            const optionElement = document.createElement('div');
-            optionElement.className = 'review-option';
-            
-            if (i === userAnswer) {
-                optionElement.classList.add('selected-option');
-            }
-            if (i === question.correctIndex) {
-                optionElement.classList.add('correct-option');
-            }
-            
-            optionElement.textContent = option;
-            reviewOptions.appendChild(optionElement);
+        elements.reviewAnswersBtn.addEventListener('click', () => {
+            // Switch to analysis tab
+            document.querySelector('.tab[data-tab="analysis"]').click();
         });
-        
-        const explanationBtn = document.createElement('button');
-        explanationBtn.className = 'btn btn-explanation';
-        explanationBtn.innerHTML = '<i class="fas fa-lightbulb"></i> Show Explanation';
-        explanationBtn.onclick = () => showExplanation(index);
-        
-        reviewItem.appendChild(reviewQuestion);
-        reviewItem.appendChild(reviewOptions);
-        reviewItem.appendChild(explanationBtn);
-        
-        elements.questionReview.appendChild(reviewItem);
-    });
-}
 
-// Generate time analysis
-function generateTimeAnalysis() {
-    // Calculate average time
-    const answeredQuestions = quizState.questionTimes.filter(time => time > 0);
-    const avgTime = answeredQuestions.length > 0 
-        ? Math.round(answeredQuestions.reduce((a, b) => a + b, 0) / answeredQuestions.length) 
-        : 0;
-    
-    // Find fastest and slowest questions
-    let fastestIndex = 0;
-    let slowestIndex = 0;
-    let fastestTime = answeredQuestions.length > 0 ? answeredQuestions[0] : 0;
-    let slowestTime = answeredQuestions.length > 0 ? answeredQuestions[0] : 0;
-    
-    for (let i = 1; i < answeredQuestions.length; i++) {
-        if (answeredQuestions[i] < fastestTime) {
-            fastestTime = answeredQuestions[i];
-            fastestIndex = i;
-        }
-        if (answeredQuestions[i] > slowestTime) {
-            slowestTime = answeredQuestions[i];
-            slowestIndex = i;
-        }
-    }
-    
-    // Set time analysis
-    elements.avgTimePerQuestion.textContent = avgTime;
-    elements.fastestQuestion.textContent = fastestIndex + 1;
-    elements.fastestTime.textContent = fastestTime;
-    elements.slowestQuestion.textContent = slowestIndex + 1;
-    elements.slowestTime.textContent = slowestTime;
-    
-    // Simple chart visualization
-    elements.timeSpentChart.innerHTML = '';
-    const maxTime = Math.max(...quizState.questionTimes, 1);
-    
-    quizState.questionTimes.forEach((time, index) => {
-        if (time > 0) {
-            const bar = document.createElement('div');
-            bar.style.height = `${(time / maxTime) * 100}%`;
-            bar.style.width = '20px';
-            bar.style.backgroundColor = time === fastestTime ? '#4CAF50' : time === slowestTime ? '#F44336' : '#2196F3';
-            bar.style.display = 'inline-block';
-            bar.style.margin = '0 2px';
-            bar.style.position = 'relative';
-            bar.title = `Q${index + 1}: ${time}s`;
-            
-            const label = document.createElement('div');
-            label.textContent = index + 1;
-            label.style.position = 'absolute';
-            label.style.bottom = '-20px';
-            label.style.left = '0';
-            label.style.fontSize = '10px';
-            label.style.textAlign = 'center';
-            label.style.width = '20px';
-            
-            bar.appendChild(label);
-            elements.timeSpentChart.appendChild(bar);
-        }
-    });
-}
+        // Tab switching
+        elements.tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and contents
+                elements.tabs.forEach(t => t.classList.remove('active'));
+                elements.tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}Tab`).classList.add('active');
+            });
+        });
 
-// Update progress bar
-function updateProgressBar() {
-    const progress = ((quizState.currentQuestionIndex + 1) / quizState.quizData.totalQuestions) * 100;
-    elements.progressBar.style.width = `${progress}%`;
-}
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' && quizState.currentQuestionIndex > 0) {
+                loadQuestion(quizState.currentQuestionIndex - 1);
+            } else if (e.key === 'ArrowRight' && quizState.currentQuestionIndex < quizState.questions.length - 1) {
+                loadQuestion(quizState.currentQuestionIndex + 1);
+            } else if (e.key === 'Enter' && quizState.currentQuestionIndex < quizState.questions.length - 1) {
+                loadQuestion(quizState.currentQuestionIndex + 1);
+            }
+        });
 
-// Create confetti effect
-function createConfetti() {
-    for (let i = 0; i < 100; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = `${Math.random() * 100}vw`;
-        confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-        confetti.style.width = `${Math.random() * 10 + 5}px`;
-        confetti.style.height = `${Math.random() * 10 + 5}px`;
-        confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
-        document.body.appendChild(confetti);
-        
-        // Remove confetti after animation
-        setTimeout(() => {
-            confetti.remove();
-        }, 5000);
-    }
-}
-
-// Event Listeners
-elements.prevBtn.addEventListener('click', () => {
-    if (quizState.currentQuestionIndex > 0) {
-        loadQuestion(quizState.currentQuestionIndex - 1);
-    }
-});
-
-elements.nextBtn.addEventListener('click', () => {
-    if (quizState.currentQuestionIndex < quizState.quizData.questions.length - 1) {
-        loadQuestion(quizState.currentQuestionIndex + 1);
-    }
-});
-
-elements.submitBtn.addEventListener('click', submitQuiz);
-
-elements.submitQuestionBtn.addEventListener('click', submitAnswer);
-
-elements.closeExplanation.addEventListener('click', () => {
-    elements.explanationModal.style.display = 'none';
-});
-
-// Close modal when clicking outside
-window.addEventListener('click', (event) => {
-    if (event.target === elements.explanationModal) {
-        elements.explanationModal.style.display = 'none';
-    }
-});
-
-elements.restartQuizBtn.addEventListener('click', () => {
-    // Reset quiz state
-    quizState.currentQuestionIndex = 0;
-    quizState.score = 0;
-    quizState.correctAnswers = 0;
-    quizState.incorrectAnswers = 0;
-    quizState.skippedAnswers = 0;
-    quizState.timeSpent = 0;
-    quizState.questionTimes = Array(quizState.quizData.totalQuestions).fill(0);
-    quizState.answers = Array(quizState.quizData.totalQuestions).fill(null);
-    quizState.completed = false;
-    
-    // Reset UI
-    elements.currentScore.textContent = '0';
-    elements.resultsContainer.style.display = 'none';
-    elements.quizContainer.style.display = 'block';
-    
-    // Start quiz again
-    startQuiz();
-});
-
-elements.reviewAnswersBtn.addEventListener('click', () => {
-    // Switch to analysis tab
-    document.querySelector('.tab[data-tab="analysis"]').click();
-});
-
-// Tab switching
-elements.tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        // Remove active class from all tabs and contents
-        elements.tabs.forEach(t => t.classList.remove('active'));
-        elements.tabContents.forEach(c => c.classList.remove('active'));
-        
-        // Add active class to clicked tab and corresponding content
-        tab.classList.add('active');
-        const tabId = tab.getAttribute('data-tab');
-        document.getElementById(`${tabId}Tab`).classList.add('active');
-    });
-});
-
-// Keyboard navigation
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' && quizState.currentQuestionIndex > 0) {
-        loadQuestion(quizState.currentQuestionIndex - 1);
-    } else if (e.key === 'ArrowRight' && quizState.currentQuestionIndex < quizState.quizData.questions.length - 1) {
-        loadQuestion(quizState.currentQuestionIndex + 1);
-    } else if (e.key === 'Enter' && quizState.currentQuestionIndex < quizState.quizData.questions.length - 1) {
-        loadQuestion(quizState.currentQuestionIndex + 1);
-    }
-});
-
-// Initialize the quiz when the page loads
-window.addEventListener('load', initQuiz);
-
-</script>
+        // Initialize the quiz when the page loads
+        window.addEventListener('load', initQuiz);
+    </script>
 </body>
 </html>
