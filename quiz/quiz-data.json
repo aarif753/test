@@ -1,0 +1,126 @@
+{
+    "title": "Advanced Knowledge Test",
+    "description": "Test your understanding of various concepts",
+    "totalQuestions": 10,
+    "passingScore": 70,
+    "timeLimit": 1800,
+    "questions": [
+        {
+            "id": 1,
+            "image": "questions/q1.jpg",
+            "correctIndex": 2,
+            "explanation": {
+                "image": "explanations/e1.jpg"
+            },
+            "difficulty": "easy"
+        },
+        {
+            "id": 2,
+            "text": "Which planet is known as the Red Planet?",
+            "image": "questions/q2.jpg",
+            "options": ["Venus", "Mars", "Jupiter", "Saturn"],
+            "correctIndex": 1,
+            "explanation": {
+                "text": "Mars appears red due to iron oxide (rust) on its surface.",
+                "image": "explanations/e2.jpg"
+            },
+            "difficulty": "easy"
+        },
+        {
+            "id": 3,
+            "text": "What is the chemical symbol for Gold?",
+            "image": "questions/q3.jpg",
+            "options": ["Go", "Gd", "Au", "Ag"],
+            "correctIndex": 2,
+            "explanation": {
+                "text": "Gold's symbol Au comes from its Latin name 'Aurum'.",
+                "image": "explanations/e3.jpg"
+            },
+            "difficulty": "medium"
+        },
+        {
+            "id": 4,
+            "text": "Which language has the most native speakers?",
+            "image": "questions/q4.jpg",
+            "options": ["English", "Hindi", "Spanish", "Mandarin"],
+            "correctIndex": 3,
+            "explanation": {
+                "text": "Mandarin Chinese has about 1.1 billion native speakers.",
+                "image": "explanations/e4.jpg"
+            },
+            "difficulty": "medium"
+        },
+        {
+            "id": 5,
+            "text": "What is the largest ocean on Earth?",
+            "image": "questions/q5.jpg",
+            "options": ["Atlantic", "Indian", "Arctic", "Pacific"],
+            "correctIndex": 3,
+            "explanation": {
+                "text": "The Pacific Ocean covers about 63 million square miles.",
+                "image": "explanations/e5.jpg"
+            },
+            "difficulty": "easy"
+        },
+        {
+            "id": 6,
+            "text": "Who painted the Mona Lisa?",
+            "image": "questions/q6.jpg",
+            "options": ["Van Gogh", "Picasso", "Da Vinci", "Michelangelo"],
+            "correctIndex": 2,
+            "explanation": {
+                "text": "Leonardo da Vinci painted the Mona Lisa in the early 16th century.",
+                "image": "explanations/e6.jpg"
+            },
+            "difficulty": "medium"
+        },
+        {
+            "id": 7,
+            "text": "What is the square root of 64?",
+            "image": "questions/q7.jpg",
+            "options": ["4", "6", "8", "10"],
+            "correctIndex": 2,
+            "explanation": {
+                "text": "8 × 8 = 64, so the square root is 8.",
+                "image": "explanations/e7.jpg"
+            },
+            "difficulty": "easy"
+        },
+        {
+            "id": 8,
+            "text": "Which element has the atomic number 1?",
+            "image": "questions/q8.jpg",
+            "options": ["Helium", "Hydrogen", "Oxygen", "Carbon"],
+            "correctIndex": 1,
+            "explanation": {
+                "text": "Hydrogen is the lightest and most abundant element.",
+                "image": "explanations/e8.jpg"
+            },
+            "difficulty": "medium"
+        },
+        {
+            "id": 9,
+            "text": "What year did World War II end?",
+            "image": "questions/q9.jpg",
+            "options": ["1943", "1945", "1947", "1950"],
+            "correctIndex": 1,
+            "explanation": {
+                "text": "World War II ended in 1945 with the surrender of Japan.",
+                "image": "explanations/e9.jpg"
+            },
+            "difficulty": "hard"
+        },
+        {
+            "id": 10,
+            "text": "Which country invented tea?",
+            "image": "questions/q10.jpg",
+            "options": ["India", "England", "China", "Japan"],
+            "correctIndex": 2,
+            "explanation": {
+                "text": "Tea originated in China as early as 2737 BCE.",
+                "image": "explanations/e10.jpg"
+            },
+            "difficulty": "hard"
+        }
+    ]
+}
