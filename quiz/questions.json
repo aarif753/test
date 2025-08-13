@@ -1,0 +1,23 @@
+{
+    "timeLimit": 2700, // 45 minutes in seconds
+    "questions": [
+        {
+            "image": "q1.png",
+            "options": [
+                {"text": "Option A text"},
+                {"text": "Option B text"},
+                {"text": "Option C text"},
+                {"text": "Option D text"}
+            ],
+            "answer": 1, // Correct option (1-4)
+            "explanation": {
+                "text": "Detailed explanation for question 1",
+                "image": "e1.png",
+                "video": "explanation1.mp4" // optional
+            },
+            "topic": "Physics",
+            "difficulty": "Medium"
+        },
+        // More questions...
+    ]
+}
