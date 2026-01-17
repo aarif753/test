@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free AI Image Upscaler 2x - Enhance Photos in Browser | aarifalam.life</title>
+    <meta name="description" content="Free AI image upscaler 2x. No uploads, no registration. Upscale photos instantly in your browser using RealESRGAN AI technology.">
+    <meta name="keywords" content="image upscaler, photo enlarger, AI upscale, free upscale, 2x upscale, browser upscaler">
+    <meta name="author" content="aarifalam.life">
+    
+    <!-- Open Graph Tags for Social Sharing -->
+    <meta property="og:title" content="Free AI Image Upscaler 2x - Enhance Photos in Browser">
+    <meta property="og:description" content="Upscale images 2x for free using AI. Works entirely in your browser - no uploads needed.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aarifalam.life/tools/upscale/">
+    <meta property="og:image" content="https://aarifalam.life/tools/upscale/og-image.jpg">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://aarifalam.life/tools/upscale/">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="libs/onnxruntime/ort.all.min.js" as="script">
+    <link rel="preload" href="libs/onnxruntime/ort-wasm-simd-threaded.wasm" as="fetch" type="application/wasm" crossorigin="anonymous">
+    
+    <style>
+        /* Critical CSS for initial load */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loader">
+            <i class="fas fa-spinner fa-spin fa-3x" style="color: #667eea;"></i>
+            <h2 style="margin-top: 20px;">Loading AI Engine...</h2>
+            <p id="loadingStatus" style="margin-top: 10px; color: #666;">Initializing ONNX Runtime</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="logo-section">
+                <h1><i class="fas fa-search-plus"></i> AI Image Upscaler</h1>
+                <p class="tagline">Enhance your photos 2× using AI - 100% browser-based & private</p>
+            </div>
+            
+            <div class="trust-badges">
+                <div class="badge">
+                    <i class="fas fa-lock"></i>
+                    <span>No Uploads</span>
+                </div>
+                <div class="badge">
+                    <i class="fas fa-bolt"></i>
+                    <span>Fast Processing</span>
+                </div>
+                <div class="badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>100% Private</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Alert Box -->
+        <div class="alert-box">
+            <i class="fas fa-info-circle"></i>
+            <p><strong>Important:</strong> This tool runs AI processing directly in your browser. Quality depends on your device capabilities. This is <strong>NOT</strong> professional restoration software.</p>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-card">
+                    <div class="upload-area" id="dropArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Drag & Drop Image Here</h3>
+                        <p>or click to browse (JPG, PNG, WebP)</p>
+                        <button class="btn-primary" id="selectBtn">
+                            <i class="fas fa-folder-open"></i> Select Image
+                        </button>
+                        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" hidden>
+                        <div class="supported-formats">
+                            <span class="format-badge">PNG</span>
+                            <span class="format-badge">JPG</span>
+                            <span class="format-badge">WebP</span>
+                        </div>
+                        <p class="file-size-note">Max file size: 10MB</p>
+                    </div>
+                    
+                    <div class="image-info" id="imageInfo" style="display: none;">
+                        <h4><i class="fas fa-image"></i> Selected Image</h4>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="label">File Name:</span>
+                                <span id="fileName" class="value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Dimensions:</span>
+                                <span id="imageDimensions" class="value">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">File Size:</span>
+                                <span id="fileSize" class="value">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Controls Section -->
+            <section class="controls-section">
+                <div class="controls-card">
+                    <h3><i class="fas fa-sliders-h"></i> Upscaling Options</h3>
+                    
+                    <div class="options-grid">
+                        <div class="option">
+                            <label class="option-label">
+                                <input type="checkbox" id="tileProcessing" checked>
+                                <span class="option-text">Process in Tiles</span>
+                            </label>
+                            <div class="option-help">
+                                <i class="fas fa-question-circle"></i>
+                                <span class="help-text">Better for large images, prevents memory issues</span>
+                            </div>
+                        </div>
+                        
+                        <div class="option">
+                            <label class="option-label">
+                                <input type="checkbox" id="preserveTransparency" checked>
+                                <span class="option-text">Preserve Transparency</span>
+                            </label>
+                        </div>
+                        
+                        <div class="option">
+                            <label class="option-label">
+                                <span class="option-text">Tile Size:</span>
+                                <select id="tileSize">
+                                    <option value="256">256px</option>
+                                    <option value="512" selected>512px</option>
+                                    <option value="1024">1024px</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button id="upscaleBtn" class="btn-upscale" disabled>
+                            <i class="fas fa-magic"></i>
+                            <span>Upscale Image 2×</span>
+                        </button>
+                        
+                        <div class="device-info">
+                            <i class="fas fa-microchip"></i>
+                            <span id="deviceCapability">Detecting device capabilities...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Comparison Section -->
+            <section class="comparison-section">
+                <div class="comparison-header">
+                    <h3><i class="fas fa-columns"></i> Before & After Comparison</h3>
+                    <div class="comparison-controls">
+                        <div class="slider-control">
+                            <span class="slider-label">Original</span>
+                            <input type="range" id="comparisonSlider" min="0" max="100" value="50" disabled>
+                            <span class="slider-label">Upscaled</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="comparison-container">
+                    <div class="image-box original-box">
+                        <div class="box-header">
+                            <h4><i class="fas fa-image"></i> Original Image</h4>
+                        </div>
+                        <div class="image-display">
+                            <img id="originalImage" alt="Original image" style="display: none;">
+                            <div id="originalPlaceholder" class="placeholder">
+                                <i class="fas fa-file-image"></i>
+                                <p>Original image will appear here</p>
+                            </div>
+                        </div>
+                        <div class="image-stats">
+                            <div class="stat">
+                                <i class="fas fa-expand-alt"></i>
+                                <span id="originalStats">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="image-box upscaled-box">
+                        <div class="box-header">
+                            <h4><i class="fas fa-search-plus"></i> Upscaled 2×</h4>
+                            <span class="upscale-badge">AI Enhanced</span>
+                        </div>
+                        <div class="image-display">
+                            <canvas id="upscaledCanvas"></canvas>
+                            <div id="upscaledPlaceholder" class="placeholder">
+                                <i class="fas fa-hourglass-half"></i>
+                                <p>Upscaled result will appear here</p>
+                            </div>
+                        </div>
+                        <div class="image-stats">
+                            <div class="stat">
+                                <i class="fas fa-expand-alt"></i>
+                                <span id="upscaledStats">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="progress-container" id="progressContainer" style="display: none;">
+                    <div class="progress-header">
+                        <span id="progressStatus">Processing...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-time">
+                        <i class="fas fa-clock"></i>
+                        <span id="timeEstimate">Estimating time...</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="results-card">
+                    <h3><i class="fas fa-download"></i> Download Upscaled Image</h3>
+                    <p class="results-note">Your upscaled image is ready! Choose your preferred format:</p>
+                    
+                    <div class="download-options">
+                        <button class="download-btn" data-format="png">
+                            <i class="fas fa-file-image"></i>
+                            <span>PNG</span>
+                            <small>Lossless quality</small>
+                        </button>
+                        
+                        <button class="download-btn" data-format="jpg">
+                            <i class="fas fa-file-image"></i>
+                            <span>JPG</span>
+                            <small>Smaller file size</small>
+                        </button>
+                        
+                        <button class="download-btn" data-format="webp">
+                            <i class="fas fa-file-image"></i>
+                            <span>WebP</span>
+                            <small>Modern format</small>
+                        </button>
+                    </div>
+                    
+                    <div class="quality-control">
+                        <div class="quality-header">
+                            <label for="qualitySlider">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Quality:</span>
+                                <span id="qualityValue">95</span>%
+                            </label>
+                        </div>
+                        <input type="range" id="qualitySlider" min="70" max="100" value="95">
+                        <div class="quality-labels">
+                            <span>Smaller File</span>
+                            <span>Better Quality</span>
+                        </div>
+                    </div>
+                    
+                    <div class="share-section">
+                        <h4><i class="fas fa-share-alt"></i> Share This Tool</h4>
+                        <div class="share-buttons">
+                            <button class="share-btn" data-platform="twitter">
+                                <i class="fab fa-twitter"></i> Twitter
+                            </button>
+                            <button class="share-btn" data-platform="facebook">
+                                <i class="fab fa-facebook"></i> Facebook
+                            </button>
+                            <button class="share-btn" data-platform="whatsapp">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+            
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h4>Is this tool really free?</h4>
+                    <p>Yes! The 2x image upscaler is completely free to use. There are no hidden charges or subscriptions.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Where are my images processed?</h4>
+                    <p>All processing happens 100% in your browser. Images never leave your device - they're not uploaded to any server.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>What image formats are supported?</h4>
+                    <p>We support JPG, PNG, and WebP formats. Maximum file size is 10MB for optimal performance.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>How does it compare to Remini or other apps?</h4>
+                    <p>This tool uses similar AI technology (RealESRGAN) but runs locally in your browser. Results are excellent for 2x upscaling.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Why is it sometimes slow?</h4>
+                    <p>Processing speed depends on your device's capabilities. Large images or slower devices may take more time.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h4>Will you add 4x upscaling?</h4>
+                    <p>Yes! We're working on adding 4x upscaling as a premium feature in the future.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About This Tool</h4>
+                    <p>Powered by RealESRGAN AI running locally via ONNX Runtime. No servers, no uploads, completely private image processing.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <a href="https://aarifalam.life/">Home</a>
+                    <a href="https://aarifalam.life/tools/">All Tools</a>
+                    <a href="https://aarifalam.life/contact/">Contact</a>
+                    <a href="https://aarifalam.life/privacy/">Privacy Policy</a>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Technical Details</h4>
+                    <p>Built with ONNX Runtime Web. Uses WebGPU when available, falls back to WASM. Model: RealESRGAN x2.</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2024 <a href="https://aarifalam.life">aarifalam.life</a> - Free AI Image Upscaler</p>
+                <p class="disclaimer">All image processing happens in your browser. No data is collected or stored.</p>
+            </div>
+        </footer>
+    </div>
+
+<!-- Change this in your index.html: -->
+<script src="libs/onnxruntime/ort.all.min.js" defer></script>
+<script src="js/app.js" defer></script>
+    
+    <!-- Simple Page Analytics -->
+    <script>
+        // Track page view
+        window.addEventListener('load', function() {
+            console.log('AI Image Upscaler loaded successfully');
+            
+            // Track usage events
+            const trackEvent = (action, label) => {
+                console.log(`Event: ${action} - ${label}`);
+                // Add your analytics here later
+            };
+            
+            // Track important events
+            document.addEventListener('click', function(e) {
+                if (e.target.id === 'upscaleBtn') {
+                    trackEvent('upscale', 'click');
+                }
+                if (e.target.closest('.download-btn')) {
+                    trackEvent('download', e.target.closest('.download-btn').dataset.format);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
