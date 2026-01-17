@@ -8,16 +8,6 @@
     <meta name="keywords" content="image upscaler, photo enlarger, AI upscale, free upscale, 2x upscale, browser upscaler">
     <meta name="author" content="aarifalam.life">
     
-    <!-- Open Graph Tags for Social Sharing -->
-    <meta property="og:title" content="Free AI Image Upscaler 2x - Enhance Photos in Browser">
-    <meta property="og:description" content="Upscale images 2x for free using AI. Works entirely in your browser - no uploads needed.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://aarifalam.life/tools/upscale/">
-    <meta property="og:image" content="https://aarifalam.life/tools/upscale/og-image.jpg">
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://aarifalam.life/tools/upscale/">
-    
     <!-- Favicon -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     
@@ -26,8 +16,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Preload critical assets -->
-    <link rel="preload" href="libs/onnxruntime/ort.all.min.js" as="script">
-    <link rel="preload" href="libs/onnxruntime/ort-wasm-simd-threaded.wasm" as="fetch" type="application/wasm" crossorigin="anonymous">
     
     <style>
         /* Critical CSS for initial load */
@@ -392,10 +380,6 @@
             </div>
         </footer>
     </div>
-<script>
-    // SET PATH BEFORE LOADING ONNX
-    window.ONNX_WASM_PATH = 'libs/onnxruntime/';
-</script>
 
 <!-- Change this in your index.html: -->
 <script src="libs/onnxruntime/ort.all.min.js" defer></script>
@@ -427,3 +411,4 @@
 </body>
 
 </html>
+
