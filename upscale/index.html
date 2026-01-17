@@ -392,6 +392,10 @@
             </div>
         </footer>
     </div>
+<script>
+    // SET PATH BEFORE LOADING ONNX
+    window.ONNX_WASM_PATH = 'libs/onnxruntime/';
+</script>
 
 <!-- Change this in your index.html: -->
 <script src="libs/onnxruntime/ort.all.min.js" defer></script>
@@ -421,4 +425,5 @@
         });
     </script>
 </body>
+
 </html>
